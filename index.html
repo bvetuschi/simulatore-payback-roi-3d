@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulatore Payback & ROI – Stampanti 3D Dentali</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#e8eef3;color:#222;line-height:1.5}
+.header{background:linear-gradient(135deg,#1a3a4a 0%,#2c5f6e 100%);color:#fff;padding:18px 24px;text-align:left}
+.header h1{font-size:1.45rem;font-weight:700;letter-spacing:.3px}
+.header p{font-size:.82rem;opacity:.75;margin-top:2px}
+.print-btn{display:block;margin:16px auto 0;background:#2c5f6e;color:#fff;border:none;padding:12px 28px;border-radius:6px;font-size:1rem;cursor:pointer;font-weight:600}
+.print-btn:hover{background:#1a3a4a}
+.tabs{display:flex;justify-content:center;gap:0;margin:18px auto 0;max-width:1100px;border-bottom:2px solid #2c5f6e}
+.tab{padding:11px 24px;cursor:pointer;font-weight:600;font-size:.92rem;color:#555;background:#dce5ec;border-radius:8px 8px 0 0;border:1px solid #c0ccd6;border-bottom:none;margin-bottom:-2px;transition:.15s}
+.tab.active{background:#fff;color:#1a3a4a;border-color:#2c5f6e;border-bottom:2px solid #fff}
+.tab:hover:not(.active){background:#cdd8e2}
+.panel{display:none;max-width:1100px;margin:0 auto 24px;background:#fff;border-radius:0 0 10px 10px;box-shadow:0 2px 12px rgba(0,0,0,.08);padding:24px 28px}
+.panel.active{display:block}
+.section{background:#f7f9fb;border:1px solid #dce5ec;border-radius:8px;padding:16px 20px;margin-bottom:16px}
+.section-title{font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#1a3a4a;margin-bottom:12px;border-bottom:1px solid #dce5ec;padding-bottom:6px}
+.row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px;align-items:center}
+.row label{flex:1 1 280px;font-size:.85rem;color:#444}
+.row input,.row select{width:140px;padding:7px 10px;border:1px solid #b8c6d1;border-radius:5px;font-size:.9rem;text-align:right;background:#fff}
+.row input:focus,.row select:focus{outline:none;border-color:#2c5f6e;box-shadow:0 0 0 2px rgba(44,95,110,.15)}
+.row .unit{font-size:.8rem;color:#888;width:70px;text-align:left;padding-left:4px}
+.row .note{font-size:.75rem;color:#999;flex:0 0 100%;padding-left:290px}
+.result-box{background:linear-gradient(135deg,#f0faf4 0%,#e6f6ed 100%);border:1px solid #8fc5a4;border-radius:8px;padding:16px 20px;margin-top:12px}
+.result-box.warn{background:linear-gradient(135deg,#fff8e6 0%,#fff3cc 100%);border-color:#e6c84e}
+.result-box.info{background:linear-gradient(135deg,#eef4ff 0%,#e0ecff 100%);border-color:#7ba4d9}
+.result-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.05)}
+.result-row:last-child{border-bottom:none}
+.result-row .lbl{font-size:.85rem;color:#444}
+.result-row .val{font-size:1rem;font-weight:700;color:#1a3a4a}
+.result-row .val.green{color:#1a8a4a}
+.result-row .val.blue{color:#2060a8}
+.big-result{text-align:center;padding:14px;margin-top:12px;border-radius:8px}
+.big-result .number{font-size:2rem;font-weight:800}
+.big-result .label{font-size:.85rem;color:#555;margin-top:2px}
+.big-result.green{background:#e6f6ed;color:#1a8a4a}
+.big-result.blue{background:#e0ecff;color:#2060a8}
+.big-result.orange{background:#fff3e0;color:#c67200}
+table.cost-table{width:100%;border-collapse:collapse;font-size:.78rem;margin-top:8px}
+table.cost-table th{background:#1a3a4a;color:#fff;padding:6px 6px;text-align:center;font-weight:600;font-size:.72rem;text-transform:uppercase}
+table.cost-table th:first-child{text-align:left;min-width:140px}
+table.cost-table td{padding:5px 6px;border-bottom:1px solid #e8eef3;text-align:right;font-size:.78rem}
+table.cost-table td:first-child{text-align:left;color:#444}
+table.cost-table tr.total{background:#f0faf4;font-weight:700}
+table.cost-table tr.total td{border-top:2px solid #1a3a4a}
+table.cost-table tr:hover{background:#f7f9fb}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.fascia{padding:8px 14px;border-radius:6px;background:#f0f0f0;display:flex;justify-content:space-between;align-items:center;font-size:.85rem;margin-bottom:4px;border:2px solid transparent;transition:.2s}
+.fascia.on{background:#e6f6ed;border-color:#1a8a4a}
+.fascia .perc{font-weight:700;color:#1a8a4a}
+.legend{font-size:.75rem;color:#888;margin-top:8px;text-align:center;line-height:1.7}
+.legend span{display:inline-block;padding:2px 8px;border-radius:3px;margin:0 3px}
+.legend .inp{color:#0000ff}
+.legend .calc{color:#000;font-weight:600}
+.legend .yel{background:#fffde0}
+/* Tooltip formule */
+.has-tip{cursor:help;border-bottom:1px dotted #2c5f6e;position:relative}
+.has-tip::after{content:'ⓘ';font-size:.6em;vertical-align:super;margin-left:3px;color:#2c5f6e;opacity:.6}
+.tip-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:9998;animation:tipFadeIn .15s}
+.tip-box{display:none;position:fixed;z-index:9999;background:#fff;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.25);padding:20px 22px;max-width:420px;width:calc(100vw - 32px);left:50%;top:50%;transform:translate(-50%,-50%);animation:tipSlideIn .2s;max-height:80vh;overflow-y:auto}
+.tip-box .tip-title{font-size:.82rem;font-weight:700;color:#1a3a4a;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #2c5f6e}
+.tip-box .tip-formula{background:#f0f5fa;border-left:3px solid #2c5f6e;padding:10px 14px;border-radius:0 6px 6px 0;margin:8px 0;font-size:.85rem;color:#333;line-height:1.6}
+.tip-box .tip-formula b{color:#1a3a4a}
+.tip-box .tip-calc{background:#e6f6ed;border-left:3px solid #1a8a4a;padding:10px 14px;border-radius:0 6px 6px 0;margin:8px 0;font-size:.85rem;color:#1a3a4a;line-height:1.6;font-weight:600}
+.tip-box .tip-note{font-size:.78rem;color:#888;margin-top:8px;line-height:1.5}
+.tip-box .tip-close{display:block;margin:14px auto 0;background:#2c5f6e;color:#fff;border:none;padding:8px 28px;border-radius:6px;font-size:.88rem;cursor:pointer;font-weight:600}
+.tip-box .tip-close:hover{background:#1a3a4a}
+@keyframes tipFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes tipSlideIn{from{opacity:0;transform:translate(-50%,-48%)}to{opacity:1;transform:translate(-50%,-50%)}}
+.footer{text-align:center;padding:20px;font-size:.75rem;color:#888;margin-top:12px}
+.footer a{color:#2c5f6e}
+hr.sep{border:none;border-top:1px dashed #dce5ec;margin:12px 0}
+.tech-panel{transition:.2s}
+.overflow-x{overflow-x:auto}
+@media print{
+  body{background:#fff}
+  .tabs,.print-btn,.no-print{display:none!important}
+  .panel{display:block!important;box-shadow:none;border:none;margin:0;max-width:100%;page-break-inside:avoid}
+  .header{padding:10px 16px}
+}
+@media(max-width:700px){
+  .row label{flex:1 1 100%}
+  .row input,.row select{width:100%}
+  .row .unit{width:100%;padding-left:0}
+  .row .note{padding-left:0}
+  .grid-3{grid-template-columns:1fr}
+  .tab{padding:8px 10px;font-size:.78rem}
+  .panel{padding:14px}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Simulatore Payback & ROI – Stampanti 3D Dentali</h1>
+  <p>Calcolo costo per pezzo, margine, ROI e payback per investimenti in stampa 3D</p>
+</div>
+
+<button class="print-btn no-print" onclick="window.print()">🖨 Stampa / Salva PDF</button>
+
+<div class="legend no-print" style="max-width:1100px;margin:12px auto 0">
+  <span class="inp">Testo blu</span> = input modificabile &nbsp;|&nbsp;
+  <span class="calc">Testo nero</span> = formula calcolata &nbsp;|&nbsp;
+  Tocca un risultato con <span style="color:#2c5f6e">ⓘ</span> per vedere la formula
+</div>
+
+<div class="tabs no-print">
+  <div class="tab active" onclick="switchTab(0)">Ipotesi & Investimento</div>
+  <div class="tab" onclick="switchTab(1)">Analisi Costi</div>
+  <div class="tab" onclick="switchTab(2)">Scenario & ROI</div>
+</div>
+
+<!-- ==================== TAB 1: IPOTESI ==================== -->
+<div class="panel active" id="panel0">
+
+  <!-- A. INVESTIMENTO -->
+  <div class="section">
+    <div class="section-title">A. Investimento iniziale</div>
+    <div class="row"><label>Stampante 3D (modello / descrizione)</label><input id="descStampante" type="text" value="" placeholder="Es. Stratasys J5 DentaJet" style="width:260px;text-align:left"></div>
+    <div class="row"><label>Costo stampante + starter package</label><input id="costoStampante" type="number" value="61900" style="color:#0000ff" oninput="calcAll()"><span class="unit">€</span></div>
+    <div class="row"><label>Accessori (estrattore aria, scanner kit, ecc.)</label><input id="costoAccessori" type="number" value="2836" style="color:#0000ff" oninput="calcAll()"><span class="unit">€</span></div>
+    <div class="row"><label>Camera di polimerizzazione</label><input id="costoPolim" type="number" value="1700" style="color:#0000ff" oninput="calcAll()"><span class="unit">€</span></div>
+    <div class="row"><label>Stazione di lavaggio</label><input id="costoLavaggio" type="number" value="4900" style="color:#0000ff" oninput="calcAll()"><span class="unit">€</span></div>
+    <div class="result-box info">
+      <div class="result-row" onclick="showTip('totInvestimento')"><span class="lbl has-tip">► TOTALE INVESTIMENTO</span><span class="val blue" id="totInvestimento">€ 71.336</span></div>
+    </div>
+  </div>
+
+  <!-- B. IPERAMMORTAMENTO INTEGRATO -->
+  <div class="section">
+    <div class="section-title">B. Iper-Ammortamento (Calcolo Integrato)</div>
+    <div class="row"><label>Contributi / agevolazioni sul bene</label><input id="contributi" type="number" value="0" style="color:#0000ff" oninput="calcAll()"><span class="unit">€</span></div>
+    <div class="row"><label>Tipo soggetto fiscale</label>
+      <select id="tipoSoggetto" style="width:260px;text-align:left" onchange="onTipoSoggetto()">
+        <option value="27.9">SRL / SPA – IRES 24% + IRAP 3,9% = 27,9%</option>
+        <option value="26.9">Reddito fino a 28.000 – IRPEF 23% + IRAP 3,9%</option>
+        <option value="36.9">Reddito 28.001-50.000 – IRPEF 33% + IRAP 3,9%</option>
+        <option value="46.9">Reddito oltre 50.000 – IRPEF 43% + IRAP 3,9%</option>
+        <option value="custom">Personalizzata</option>
+      </select>
+    </div>
+    <div class="row"><label>Aliquota fiscale</label><input id="aliquotaFiscale" type="number" value="27.9" step="0.1" style="color:#0000ff" oninput="calcAll()"><span class="unit">%</span></div>
+    <div class="row"><label>Durata ammortamento</label>
+      <select id="durataAmm" style="width:160px" onchange="calcAll()">
+        <option value="3" selected>3 anni – 33,3%</option>
+        <option value="4">4 anni – 25%</option>
+        <option value="5">5 anni – 20%</option>
+        <option value="8">8 anni – 12,5%</option>
+      </select>
+    </div>
+    <div class="row"><label>Fascia di maggiorazione</label>
+      <select id="fasciaMagg" style="width:200px" onchange="calcAll()">
+        <option value="180">Fino a €2.500.000 → +180%</option>
+        <option value="100">€2.500.001 – 10.000.000 → +100%</option>
+        <option value="50">€10.000.001 – 20.000.000 → +50%</option>
+        <option value="0">Nessuna maggiorazione</option>
+      </select>
+    </div>
+    <div class="result-box info">
+      <div class="result-row" onclick="showTip('iaCostoNetto')"><span class="lbl has-tip">Costo netto agevolabile</span><span class="val" id="iaCostoNetto">–</span></div>
+      <div class="result-row" onclick="showTip('iaMagg')"><span class="lbl has-tip">Maggiorazione</span><span class="val" id="iaMagg">–</span></div>
+      <div class="result-row" onclick="showTip('iaRisparmio')"><span class="lbl has-tip">Risparmio fiscale TOTALE</span><span class="val green" id="iaRisparmio">–</span></div>
+      <div class="result-row" onclick="showTip('iaCostoReale')"><span class="lbl has-tip">★ COSTO NETTO REALE post iper-ammortamento</span><span class="val blue" id="iaCostoReale">–</span></div>
+      <div class="result-row" onclick="showTip('iaAmmAnnuo')"><span class="lbl has-tip">Ammortamento annuo sul costo netto reale</span><span class="val" id="iaAmmAnnuo">–</span></div>
+    </div>
+    <div style="font-size:.75rem;color:#888;margin-top:6px;text-align:center">
+      Calcolo basato su L. 199/2025 e D.L. n. 38/2026. Bene interconnesso Allegati IV-V. Non sostituisce consulenza fiscale.<br>
+      <a href="https://bvetuschi.github.io/simulatore-iperammortamento-2026/" target="_blank" style="color:#2c5f6e">→ Apri simulatore iperammortamento completo</a>
+    </div>
+  </div>
+
+  <!-- C. ASSISTENZA & SERVICE -->
+  <div class="section">
+    <div class="section-title">C. Assistenza Tecnica & Service</div>
+    <div class="row"><label>Service anno 1 (garanzia inclusa?)</label><input id="service1" type="number" value="0" style="color:#0000ff" oninput="calcAll()"><span class="unit">€/anno</span></div>
+    <div class="row"><label>Service anno 2</label><input id="service2" type="number" value="0" style="color:#0000ff" oninput="calcAll()"><span class="unit">€/anno</span></div>
+    <div class="row"><label>Service anno 3+</label><input id="service3" type="number" value="10000" style="color:#0000ff" oninput="calcAll()"><span class="unit">€/anno</span></div>
+    <div class="row"><label>Budget consumabili processo (soda, glicerina, IPA, filtri, ecc.)</label><input id="consumabili" type="number" value="1000" style="color:#0000ff" oninput="calcAll()"><span class="unit">€/anno</span></div>
+    <div class="result-box">
+      <div class="result-row" onclick="showTip('serviceMedio')"><span class="lbl has-tip">► Costo service medio/anno (su durata ammortamento)</span><span class="val" id="serviceMedio">–</span></div>
+    </div>
+  </div>
+
+  <!-- D. CONSUMABILI STAMPANTE -->
+  <div class="section">
+    <div class="section-title">D. Consumabili Stampante (Testine / Vaschette / Tank)</div>
+    <div class="row"><label><strong>Tecnologia stampante</strong></label>
+      <select id="techType" style="width:240px;text-align:left;font-weight:600" onchange="onTechChange();calcAll()">
+        <option value="polyjet">PolyJet (Stratasys)</option>
+        <option value="asiga">DLP (Asiga)</option>
+        <option value="formlabs">SLA (Formlabs)</option>
+      </select>
+    </div>
+
+    <!-- D1. PolyJet (Stratasys) -->
+    <div id="techPolyjet" class="tech-panel">
+      <hr class="sep">
+      <p style="font-size:.78rem;color:#1a3a4a;font-weight:600;margin-bottom:8px">Testine di stampa – PolyJet (Stratasys)</p>
+      <div class="row"><label>Costo singola testina</label><input id="pjCosto" type="number" value="1539.30" step="0.01" style="color:#0000ff" oninput="calcAll()"><span class="unit">€</span></div>
+      <div class="row"><label>Numero testine fisiche nella macchina</label><input id="pjNum" type="number" value="3" style="color:#0000ff" oninput="calcAll()"><span class="unit">pz</span></div>
+      <div class="row"><label>Ore vita media testina (stima)</label><input id="pjVita" type="number" value="1500" style="color:#0000ff" oninput="calcAll()"><span class="unit">ore</span></div>
+      <div class="row"><label>Testine incluse gratuitamente</label><input id="pjGratis" type="number" value="2" style="color:#0000ff" oninput="calcAll()"><span class="unit">pz</span></div>
+    </div>
+
+    <!-- D2. Asiga -->
+    <div id="techAsiga" class="tech-panel" style="display:none">
+      <hr class="sep">
+      <p style="font-size:.78rem;color:#1a3a4a;font-weight:600;margin-bottom:8px">Build Tray – Asiga</p>
+      <div class="row"><label>Modello stampante / tray</label>
+        <select id="asigaModello" style="width:280px;text-align:left;font-size:.82rem" onchange="onAsigaModello();calcAll()">
+          <optgroup label="MAX / MAX X / PICO2 – Universal™">
+            <option value="85|1">1L Universal™ – €85</option>
+            <option value="130|2" selected>2L Universal™ – €130</option>
+            <option value="215|5">5L Universal™ – €215</option>
+            <option value="295|10">10L Universal™ – €295</option>
+          </optgroup>
+          <optgroup label="MAX / MAX X / PICO2 – Low Force™">
+            <option value="85|1">1L Low Force™ – €85</option>
+          </optgroup>
+          <optgroup label="MAX / MAX X / PICO2 – UltraGLOSS™">
+            <option value="105|1">1L UltraGLOSS™ – €105</option>
+          </optgroup>
+          <optgroup label="MAX – LIFT™">
+            <option value="295|1">Max LIFT™ – €295</option>
+            <option value="295|1">Max UltraGLOSS LIFT™ – €295</option>
+          </optgroup>
+          <optgroup label="Ultra – Endurance / UltraGLOSS">
+            <option value="85|2">2L Ultra Endurance™ – €85</option>
+            <option value="130|5">5L Ultra Endurance™ – €130</option>
+            <option value="85|2">2L Ultra UltraGLOSS™ – €85</option>
+          </optgroup>
+          <optgroup label="PRO 4K / PRO 4K XL">
+            <option value="85|2">2L PRO 4K Low Force™ – €85</option>
+            <option value="130|5">5L PRO 4K Low Force™ – €130</option>
+            <option value="215|10">10L PRO 4K Low Force™ – €215</option>
+            <option value="85|2">2L PRO 4K Endurance™ – €85</option>
+            <option value="130|5">5L PRO 4K Endurance™ – €130</option>
+            <option value="105|2">2L PRO 4K UltraGLOSS™ – €105</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="row"><label>Costo vaschetta (build tray)</label><input id="asCosto" type="number" value="130" step="1" style="color:#0000ff" oninput="calcAll()"><span class="unit">€</span></div>
+      <div class="row"><label>Capacita vaschetta (vita utile)</label><input id="asCapacita" type="number" value="2" step="0.5" style="color:#0000ff" oninput="calcAll()"><span class="unit">litri</span></div>
+      <div class="row"><label>Vaschette incluse gratuitamente</label><input id="asGratis" type="number" value="1" style="color:#0000ff" oninput="calcAll()"><span class="unit">pz</span></div>
+      <p style="font-size:.72rem;color:#888;margin-top:4px">Il costo annuo vaschette dipende dai litri di resina consumati (calcolati dalla tabella prodotti).</p>
+    </div>
+
+    <!-- D3. Formlabs -->
+    <div id="techFormlabs" class="tech-panel" style="display:none">
+      <hr class="sep">
+      <p style="font-size:.78rem;color:#1a3a4a;font-weight:600;margin-bottom:8px">Resin Tank – Formlabs</p>
+      <div class="row"><label>Modello stampante</label>
+        <select id="flModello" style="width:200px;text-align:left" onchange="onFlModello();calcAll()">
+          <option value="99">Form 4B – Tank €99</option>
+          <option value="239">Form 4L – Tank €239</option>
+        </select>
+      </div>
+      <div class="row"><label>Costo resin tank</label><input id="flCosto" type="number" value="99" step="1" style="color:#0000ff" oninput="calcAll()"><span class="unit">€</span></div>
+      <div class="row"><label>Vita utile resin tank</label><input id="flVita" type="number" value="75000" step="1000" style="color:#0000ff" oninput="calcAll()"><span class="unit">strati</span></div>
+      <div class="row"><label>Spessore strato medio (layer height)</label><input id="flLayer" type="number" value="0.100" step="0.025" style="color:#0000ff" oninput="calcAll()"><span class="unit">mm</span></div>
+      <div class="row"><label>Altezza media pezzo (tutti i prodotti)</label><input id="flAltPezzo" type="number" value="25" step="1" style="color:#0000ff" oninput="calcAll()"><span class="unit">mm</span></div>
+      <div class="row"><label>Tank inclusi gratuitamente</label><input id="flGratis" type="number" value="1" style="color:#0000ff" oninput="calcAll()"><span class="unit">pz</span></div>
+      <p style="font-size:.72rem;color:#888;margin-top:4px">Strati/pezzo = altezza pezzo / spessore strato. Costo annuo tank = (pz totali annui × strati/pz) / vita tank × costo tank.</p>
+    </div>
+
+    <div class="result-box" style="margin-top:12px">
+      <div class="result-row" onclick="showTip('consLordo')"><span class="lbl has-tip" id="consLblLordo">► Costo consumabili stampante annuo (lordo)</span><span class="val" id="consLordoVal">–</span></div>
+      <div class="result-row" onclick="showTip('consRisp')"><span class="lbl has-tip" id="consLblRisp">Risparmio consumabili gratuiti/anno (su durata amm.)</span><span class="val green" id="consRispVal">–</span></div>
+      <div class="result-row" onclick="showTip('consNetto')"><span class="lbl has-tip"><strong>► Costo consumabili NETTO annuo</strong></span><span class="val blue" id="consNettoVal">–</span></div>
+    </div>
+  </div>
+
+  <!-- E. PRODOTTI & VOLUMI -->
+  <div class="section">
+    <div class="section-title">E. Prodotti, Volumi e Materiali</div>
+    <p style="font-size:.78rem;color:#888;margin-bottom:10px">Configura fino a 7 tipologie di prodotto. Lascia volume = 0 per disattivare una riga.</p>
+    <div class="overflow-x">
+    <table class="cost-table" id="prodTable">
+      <thead><tr>
+        <th style="min-width:130px">Prodotto</th><th>Vol.<br>pz/mese</th><th>g / ml<br>resina /pz</th><th>€ resina<br><span style="font-weight:400;text-transform:none;font-size:.65rem">/1100g · /1L · /1kg</span></th><th>Unita<br>resina</th><th>g / ml<br>support /pz</th><th>€ support<br><span style="font-weight:400;text-transform:none;font-size:.65rem">/1100g · /1L · /1kg</span></th><th>Unita<br>support</th><th>h stampa<br>/job</th><th>pz<br>/job</th><th>min lav.<br>/pz</th><th>Prezzo<br>vendita €</th>
+      </tr></thead>
+      <tbody id="prodBody"></tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- F. ENERGIA & MANODOPERA -->
+  <div class="section">
+    <div class="section-title">F. Energia & Manodopera</div>
+    <div class="row"><label>Consumo elettrico durante stampa</label><input id="kw" type="number" value="2.3" step="0.1" style="color:#0000ff" oninput="calcAll()"><span class="unit">kW</span></div>
+    <div class="row"><label>Costo energia elettrica</label><input id="costoKwh" type="number" value="0.30" step="0.01" style="color:#0000ff" oninput="calcAll()"><span class="unit">€/kWh</span></div>
+    <div class="row"><label>Costo orario operatore (lordo azienda)</label><input id="costoOra" type="number" value="18" step="0.5" style="color:#0000ff" oninput="calcAll()"><span class="unit">€/ora</span></div>
+  </div>
+
+</div>
+
+<!-- ==================== TAB 2: ANALISI COSTI ==================== -->
+<div class="panel" id="panel1">
+
+  <div class="section">
+    <div class="section-title">Riepilogo Ore Macchina & Costi Fissi Annui</div>
+    <div class="result-box info">
+      <div class="result-row" onclick="showTip('oreTotAnno')"><span class="lbl has-tip">Ore macchina totali annue (tutti i prodotti)</span><span class="val" id="oreTotAnno">–</span></div>
+      <div class="result-row" onclick="showTip('iaAmmAnnuo')"><span class="lbl has-tip">Ammortamento annuo (netto iper-ammortamento)</span><span class="val" id="ammAnnuoTab2">–</span></div>
+      <div class="result-row" onclick="showTip('serviceMedio')"><span class="lbl has-tip">Service medio annuo</span><span class="val" id="serviceMedioTab2">–</span></div>
+      <div class="result-row"><span class="lbl">Consumabili processo annui</span><span class="val" id="consumabiliTab2">–</span></div>
+      <div class="result-row" onclick="showTip('consNetto')"><span class="lbl has-tip" id="consTab2Lbl">Consumabili stampante (netto gratuiti)</span><span class="val" id="consTab2Val">–</span></div>
+      <div class="result-row" style="border-top:2px solid #1a3a4a;margin-top:4px;padding-top:8px" onclick="showTip('totCostiFissi')"><span class="lbl has-tip"><strong>► TOTALE COSTI FISSI ANNUI</strong></span><span class="val blue" id="totCostiFissi">–</span></div>
+      <div class="result-row" onclick="showTip('costoFissoOra')"><span class="lbl has-tip">► Costo fisso per ora macchina</span><span class="val" id="costoFissoOra">–</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Costo Pezzo Dettagliato (€/pz, IVA esclusa)</div>
+    <div class="overflow-x">
+    <table class="cost-table" id="costDetailTable">
+      <thead><tr><th>Voce di costo</th></tr></thead>
+      <tbody>
+        <tr id="rowVol"><td>Volume annuo (pz/anno)</td></tr>
+        <tr id="rowHpz"><td>Ore macchina per pezzo (h/pz)</td></tr>
+        <tr id="rowMat"><td>1. Materiale (resine)</td></tr>
+        <tr id="rowEn"><td>2. Energia</td></tr>
+        <tr id="rowLav"><td>3. Manodopera diretta</td></tr>
+        <tr id="rowFix"><td>4. Quota costi fissi macchina</td></tr>
+        <tr id="rowTot" class="total"><td>★ COSTO PEZZO TOTALE</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Analisi Economica Annua</div>
+    <div class="overflow-x">
+    <table class="cost-table" id="econTable">
+      <thead><tr><th>Voce</th></tr></thead>
+      <tbody>
+        <tr id="eRowRic"><td>Ricavi annui</td></tr>
+        <tr id="eRowCos"><td>Costi totali annui</td></tr>
+        <tr id="eRowMar" class="total"><td>► Margine lordo</td></tr>
+        <tr id="eRowPct"><td>Margine %</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ==================== TAB 3: SCENARIO & ROI ==================== -->
+<div class="panel" id="panel2">
+
+  <div class="section">
+    <div class="section-title">1. Parametri Scenario Conservativo</div>
+    <p style="font-size:.78rem;color:#888;margin-bottom:10px">Modifica le celle blu per testare scenari diversi.</p>
+    <div class="row"><label>Utilizzo macchina (% saturazione)</label><input id="scUtilizzo" type="number" value="60" step="5" min="10" max="100" style="color:#0000ff" oninput="calcAll()"><span class="unit">%</span></div>
+    <div class="row"><label>Rifacimenti / scarti</label><input id="scRifac" type="number" value="8" step="1" min="0" max="50" style="color:#0000ff" oninput="calcAll()"><span class="unit">%</span></div>
+    <div class="row"><label>Spreco materiale extra</label><input id="scSpreco" type="number" value="15" step="1" min="0" max="50" style="color:#0000ff" oninput="calcAll()"><span class="unit">%</span></div>
+    <div class="result-box warn">
+      <div class="result-row" onclick="showTip('scFattMat')"><span class="lbl has-tip">Fattore correttivo materiale</span><span class="val" id="scFattMat">–</span></div>
+      <div class="result-row" onclick="showTip('scFattLav')"><span class="lbl has-tip">Fattore correttivo lavoro/energia</span><span class="val" id="scFattLav">–</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">2. Costo Per Pezzo – Scenario Conservativo (€/pz)</div>
+    <div class="overflow-x">
+    <table class="cost-table" id="scCostTable">
+      <thead><tr><th>Voce di costo</th></tr></thead>
+      <tbody>
+        <tr id="sRowVol"><td>Volume effettivo (pz/anno)</td></tr>
+        <tr id="sRowMat"><td>1. Materiale (+spreco +ristampe)</td></tr>
+        <tr id="sRowEn"><td>2. Energia (+ristampe)</td></tr>
+        <tr id="sRowLav"><td>3. Manodopera (+ristampe)</td></tr>
+        <tr id="sRowFix"><td>4. Quota costi fissi</td></tr>
+        <tr id="sRowTot" class="total"><td>★ COSTO TOTALE PER PEZZO</td></tr>
+        <tr id="sRowPrz" style="background:#e6f6ed"><td>Prezzo di vendita</td></tr>
+        <tr id="sRowMgn" style="background:#e6f6ed;font-weight:700"><td>▶ Margine per pezzo</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">3. Economia Annua – Scenario Conservativo</div>
+    <div class="overflow-x">
+    <table class="cost-table" id="scEconTable">
+      <thead><tr><th>Voce</th></tr></thead>
+      <tbody>
+        <tr id="seRowRic"><td>Ricavi annui</td></tr>
+        <tr id="seRowCos"><td>Costi variabili</td></tr>
+        <tr id="seRowMar"><td>Margine contribuzione</td></tr>
+        <tr id="seRowCF"><td>− Costi fissi annui</td></tr>
+        <tr id="seRowUt" class="total"><td>★ Utile operativo annuo</td></tr>
+        <tr id="seRowPct"><td>Margine % sui ricavi</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">4. ROI & Payback</div>
+    <div class="grid-3">
+      <div class="big-result green has-tip" onclick="showTip('roi')" style="cursor:help">
+        <div class="number" id="roiVal">–</div>
+        <div class="label">ROI annuo</div>
+      </div>
+      <div class="big-result blue has-tip" onclick="showTip('payback')" style="cursor:help">
+        <div class="number" id="paybackVal">–</div>
+        <div class="label">Payback (mesi)</div>
+      </div>
+      <div class="big-result orange has-tip" onclick="showTip('bep')" style="cursor:help">
+        <div class="number" id="bepVal">–</div>
+        <div class="label">Saturazione min. pareggio</div>
+      </div>
+    </div>
+    <div class="result-box" style="margin-top:14px">
+      <div class="result-row" onclick="showTip('iaCostoReale')"><span class="lbl has-tip">Investimento netto post-agevolazione</span><span class="val blue" id="roiInvest">–</span></div>
+      <div class="result-row" onclick="showTip('roiUtile')"><span class="lbl has-tip">Utile operativo annuo (conservativo)</span><span class="val green" id="roiUtile">–</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">5. Analisi di Pareggio – Volume Minimo</div>
+    <div class="overflow-x">
+    <table class="cost-table" id="bepTable">
+      <thead><tr>
+        <th>Prodotto</th><th>Margine contrib./pz</th><th>Quota costi fissi</th><th>★ Vol. min. pareggio</th>
+      </tr></thead>
+      <tbody id="bepBody"></tbody>
+    </table>
+    </div>
+  </div>
+
+</div>
+
+<div class="tip-overlay" id="tipOverlay" onclick="closeTip()"></div>
+<div class="tip-box" id="tipBox">
+  <div class="tip-title" id="tipTitle"></div>
+  <div id="tipBody"></div>
+  <button class="tip-close" onclick="closeTip()">Chiudi</button>
+</div>
+
+<div class="footer">
+  A soli fini illustrativi. Non sostituisce consulenza fiscale o analisi finanziaria professionale.<br>
+  <a href="https://bvetuschi.github.io/simulatore-iperammortamento-2026/" target="_blank">Simulatore Iper-Ammortamento 2026</a> &nbsp;|&nbsp; © 2026
+</div>
+
+<script>
+/* === CONFIG === */
+/* uRes/uSup: 1100=per 1100g (PolyJet), 1000=per 1L, 1000k=per 1kg */
+var PRODUCTS=[
+  {nome:'Protesi completa',    volMese:10, gRes:30,eRes:600,uRes:1100,gSup:20,eSup:150,uSup:1100,hJob:6,pzJob:24,minLav:7,  prezzo:250},
+  {nome:'Protesi parziale',    volMese:10, gRes:18,eRes:600,uRes:1100,gSup:12,eSup:150,uSup:1100,hJob:5,pzJob:24,minLav:5,  prezzo:150},
+  {nome:'Modello studio',      volMese:80, gRes:45,eRes:96, uRes:1100,gSup:15,eSup:57, uSup:1100,hJob:3,pzJob:25,minLav:2,  prezzo:25},
+  {nome:'Modello restauro',    volMese:50, gRes:40,eRes:96, uRes:1100,gSup:12,eSup:57, uSup:1100,hJob:3,pzJob:20,minLav:2.5,prezzo:30},
+  {nome:'Dima chirurgica',     volMese:8,  gRes:25,eRes:312,uRes:1100,gSup:10,eSup:57, uSup:1100,hJob:8,pzJob:12,minLav:3,  prezzo:150},
+  {nome:'Bite occlusale',      volMese:15, gRes:35,eRes:200,uRes:1100,gSup:18,eSup:57, uSup:1100,hJob:4,pzJob:16,minLav:4,  prezzo:80},
+  {nome:'Carico imm./provv.',  volMese:5,  gRes:50,eRes:600,uRes:1100,gSup:30,eSup:150,uSup:1100,hJob:7,pzJob:8, minLav:10, prezzo:350}
+];
+var NP=PRODUCTS.length;
+var dm={3:1/3,4:0.25,5:0.20,8:0.125};
+
+function gi(id){return document.getElementById(id)}
+function gv(id){var e=gi(id);return e?parseFloat(e.value)||0:0}
+function fmt(n){return n.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function fmtI(n){return Math.round(n).toLocaleString('it-IT')}
+function fmtE(n){return '€ '+fmtI(n)}
+
+function switchTab(i){
+  document.querySelectorAll('.tab').forEach(function(t,j){t.className='tab'+(j===i?' active':'')});
+  document.querySelectorAll('.panel').forEach(function(p,j){p.className='panel'+(j===i?' active':'')});
+}
+function onTipoSoggetto(){var v=gi('tipoSoggetto').value;if(v!=='custom')gi('aliquotaFiscale').value=v;calcAll();}
+
+/* === TECH PANELS === */
+function onTechChange(){
+  var t=gi('techType').value;
+  gi('techPolyjet').style.display=t==='polyjet'?'block':'none';
+  gi('techAsiga').style.display=t==='asiga'?'block':'none';
+  gi('techFormlabs').style.display=t==='formlabs'?'block':'none';
+}
+function onAsigaModello(){
+  var v=gi('asigaModello').value.split('|');
+  gi('asCosto').value=v[0];gi('asCapacita').value=v[1];
+}
+function onFlModello(){gi('flCosto').value=gi('flModello').value;}
+
+/* === BUILD PRODUCT TABLE === */
+function buildProdTable(){
+  var tb=gi('prodBody');tb.innerHTML='';
+  var ins='style="color:#0000ff" oninput="calcAll()"';
+  var unitSel='<select onchange="calcAll()" style="width:68px;text-align:left;font-size:.72rem;color:#0000ff;padding:3px 2px"><option value="1100">1100g (g/pz)</option><option value="1000">1 Lt (ml/pz)</option><option value="1000k">1 Kg (g/pz)</option></select>';
+  PRODUCTS.forEach(function(p,i){
+    var s='<tr>';
+    s+='<td><input type="text" value="'+p.nome+'" style="width:120px;text-align:left;border:1px solid #ccc;border-radius:3px;padding:3px 5px" oninput="calcAll()"></td>';
+    s+='<td><input type="number" value="'+p.volMese+'" '+ins+' style="width:50px;text-align:right;color:#0000ff"></td>';
+    s+='<td><input type="number" value="'+p.gRes+'" '+ins+' style="width:45px;text-align:right;color:#0000ff"></td>';
+    s+='<td><input type="number" value="'+p.eRes+'" '+ins+' style="width:45px;text-align:right;color:#0000ff"></td>';
+    s+='<td>'+unitSel.replace('value="'+p.uRes+'"','value="'+p.uRes+'" selected')+'</td>';
+    s+='<td><input type="number" value="'+p.gSup+'" '+ins+' style="width:45px;text-align:right;color:#0000ff"></td>';
+    s+='<td><input type="number" value="'+p.eSup+'" '+ins+' style="width:45px;text-align:right;color:#0000ff"></td>';
+    s+='<td>'+unitSel.replace('value="'+p.uSup+'"','value="'+p.uSup+'" selected')+'</td>';
+    s+='<td><input type="number" value="'+p.hJob+'" step="0.5" '+ins+' style="width:42px;text-align:right;color:#0000ff"></td>';
+    s+='<td><input type="number" value="'+p.pzJob+'" '+ins+' style="width:38px;text-align:right;color:#0000ff"></td>';
+    s+='<td><input type="number" value="'+p.minLav+'" step="0.5" '+ins+' style="width:42px;text-align:right;color:#0000ff"></td>';
+    s+='<td><input type="number" value="'+p.prezzo+'" '+ins+' style="width:55px;text-align:right;color:#0000ff"></td>';
+    s+='</tr>';
+    tb.innerHTML+=s;
+  });
+}
+
+/* === BUILD DYNAMIC TABLE COLUMNS === */
+function ensureCols(tableId,rows,n){
+  // Ensure header has n+1 cols (label + products) + optional TOTALE
+  var table=gi(tableId);
+  var thead=table.querySelector('thead tr');
+  var hasTotale=tableId.indexOf('Econ')>=0||tableId==='scEconTable';
+  // Reset header
+  while(thead.children.length>1)thead.removeChild(thead.lastChild);
+  for(var i=0;i<n;i++){var th=document.createElement('th');th.id=tableId+'_h'+i;th.textContent='–';thead.appendChild(th);}
+  if(hasTotale){var th=document.createElement('th');th.textContent='TOTALE';thead.appendChild(th);}
+  // Reset body rows
+  rows.forEach(function(rid){
+    var tr=gi(rid);if(!tr)return;
+    while(tr.children.length>1)tr.removeChild(tr.lastChild);
+    for(var i=0;i<n;i++){var td=document.createElement('td');td.id=rid+'_'+i;td.textContent='–';tr.appendChild(td);}
+    if(hasTotale){var td=document.createElement('td');td.id=rid+'_T';td.style.fontWeight='700';td.textContent='–';tr.appendChild(td);}
+  });
+}
+
+function buildAllTables(){
+  var n=NP;
+  ensureCols('costDetailTable',['rowVol','rowHpz','rowMat','rowEn','rowLav','rowFix','rowTot'],n);
+  ensureCols('econTable',['eRowRic','eRowCos','eRowMar','eRowPct'],n);
+  ensureCols('scCostTable',['sRowVol','sRowMat','sRowEn','sRowLav','sRowFix','sRowTot','sRowPrz','sRowMgn'],n);
+  ensureCols('scEconTable',['seRowRic','seRowCos','seRowMar'],n);
+  // special rows for scEcon
+  var seRowCF=gi('seRowCF');while(seRowCF.children.length>1)seRowCF.removeChild(seRowCF.lastChild);
+  var tdCF=document.createElement('td');tdCF.colSpan=n;tdCF.style.textAlign='center';tdCF.style.color='#888';tdCF.textContent='ripartiti sul totale →';seRowCF.appendChild(tdCF);
+  var tdCFv=document.createElement('td');tdCFv.id='seCF';tdCFv.style.fontWeight='700';tdCFv.textContent='–';seRowCF.appendChild(tdCFv);
+
+  var seRowUt=gi('seRowUt');while(seRowUt.children.length>1)seRowUt.removeChild(seRowUt.lastChild);
+  var tdU=document.createElement('td');tdU.colSpan=n;seRowUt.appendChild(tdU);
+  var tdUv=document.createElement('td');tdUv.id='seUtile';tdUv.style.fontWeight='700';tdUv.textContent='–';seRowUt.appendChild(tdUv);
+
+  var seRowPct=gi('seRowPct');while(seRowPct.children.length>1)seRowPct.removeChild(seRowPct.lastChild);
+  var tdP=document.createElement('td');tdP.colSpan=n;seRowPct.appendChild(tdP);
+  var tdPv=document.createElement('td');tdPv.id='seMarginePct';tdPv.textContent='–';seRowPct.appendChild(tdPv);
+
+  // BEP table
+  var bepB=gi('bepBody');bepB.innerHTML='';
+  for(var i=0;i<n;i++){
+    bepB.innerHTML+='<tr><td id="bp'+i+'n">–</td><td id="bp'+i+'m">–</td><td id="bp'+i+'q">–</td><td id="bp'+i+'v">–</td></tr>';
+  }
+}
+
+/* === READ PRODUCTS FROM TABLE === */
+/* unitToGrams: converte il prezzo per unita in prezzo per grammo
+   1100 = prezzo per 1100g -> /1100
+   1000 = prezzo per 1 litro (≈1000g per resine dentali) -> /1000
+   1000k = prezzo per 1 kg -> /1000 */
+function unitToGrams(unitVal){
+  if(unitVal==='1000'||unitVal==='1000k') return 1000;
+  return 1100; // default PolyJet cartucce da 1100g
+}
+
+function getProducts(){
+  var rows=gi('prodBody').querySelectorAll('tr');
+  var prods=[];
+  rows.forEach(function(tr){
+    var inp=tr.querySelectorAll('input');
+    var sel=tr.querySelectorAll('select');
+    if(inp.length<10)return;
+    var nome=inp[0].value,volM=parseFloat(inp[1].value)||0;
+    var gR=parseFloat(inp[2].value)||0,eR=parseFloat(inp[3].value)||0;
+    var uR=sel[0]?sel[0].value:'1100';
+    var gS=parseFloat(inp[4].value)||0,eS=parseFloat(inp[5].value)||0;
+    var uS=sel[1]?sel[1].value:'1100';
+    var hJ=parseFloat(inp[6].value)||0,pJ=parseFloat(inp[7].value)||1;
+    var mL=parseFloat(inp[8].value)||0,pV=parseFloat(inp[9].value)||0;
+    /* euroResina/euroSupport normalizzati: prezzo per la quantita indicata dall'unita */
+    prods.push({nome:nome,volMese:volM,volAnno:volM*12,gResina:gR,euroResina:eR,unitResina:unitToGrams(uR),gSupport:gS,euroSupport:eS,unitSupport:unitToGrams(uS),hJob:hJ,pzJob:pJ,hPz:hJ/pJ,minLav:mL,prezzoVendita:pV});
+  });
+  return prods;
+}
+
+/* === MAIN CALC === */
+function calcAll(){
+  // A. INVESTIMENTO
+  var totInv=gv('costoStampante')+gv('costoAccessori')+gv('costoPolim')+gv('costoLavaggio');
+  gi('totInvestimento').textContent=fmtE(totInv);
+
+  // B. IPERAMMORTAMENTO
+  var contributi=gv('contributi'),aliquota=gv('aliquotaFiscale')/100;
+  var durataAmm=parseInt(gi('durataAmm').value)||3,quotaAmm=dm[durataAmm]||1/3;
+  var fascia=parseInt(gi('fasciaMagg').value)||0,percMagg=fascia/100;
+  var costoNetto=Math.max(0,totInv-contributi);
+  var maggiorazione=costoNetto*percMagg,baseImp=costoNetto+maggiorazione;
+  var quotaAnnua=baseImp*quotaAmm,rispTot=quotaAnnua*aliquota*durataAmm;
+  var costoReale=totInv-rispTot,ammAnnuo=costoReale/durataAmm;
+  gi('iaCostoNetto').textContent=fmtE(costoNetto);
+  gi('iaMagg').textContent=fmtE(maggiorazione)+' (+'+fascia+'%)';
+  gi('iaRisparmio').textContent=fmtE(rispTot);
+  gi('iaCostoReale').textContent=fmtE(Math.max(0,costoReale));
+  gi('iaAmmAnnuo').textContent=fmtE(Math.max(0,ammAnnuo))+'/anno';
+
+  // C. SERVICE
+  var s1=gv('service1'),s2=gv('service2'),s3=gv('service3'),consAnnui=gv('consumabili');
+  var serviceTot=0;
+  for(var y=1;y<=durataAmm;y++){serviceTot+=(y===1?s1:y===2?s2:s3);}
+  var serviceMedio=serviceTot/durataAmm;
+  gi('serviceMedio').textContent=fmtE(serviceMedio)+'/anno';
+
+  // E. PRODOTTI (letti prima per calcoli D)
+  var prods=getProducts();
+  var kw=gv('kw'),costoKwh=gv('costoKwh'),costoOra=gv('costoOra');
+  var oreTotAnno=0,pzTotAnno=0,litriTotAnno=0;
+  prods.forEach(function(p){
+    if(p.volAnno>0){
+      oreTotAnno+=p.volAnno*p.hPz;
+      pzTotAnno+=p.volAnno;
+      litriTotAnno+=p.volAnno*(p.gResina+p.gSupport)/1000;
+    }
+  });
+
+  // D. CONSUMABILI STAMPANTE
+  var tech=gi('techType').value;
+  var consLordo=0,consRisp=0,consNetto=0;
+  var consLabel='Consumabili stampante';
+
+  if(tech==='polyjet'){
+    consLabel='Testine di stampa (PolyJet)';
+    var pjC=gv('pjCosto'),pjN=gv('pjNum'),pjV=gv('pjVita'),pjG=gv('pjGratis');
+    if(pjV>0&&oreTotAnno>0) consLordo=(oreTotAnno/pjV)*pjN*pjC;
+    consRisp=(pjG*pjC)/durataAmm;
+  } else if(tech==='asiga'){
+    consLabel='Vaschette build tray (Asiga)';
+    var asC=gv('asCosto'),asCap=gv('asCapacita'),asG=gv('asGratis');
+    if(asCap>0&&litriTotAnno>0) consLordo=(litriTotAnno/asCap)*asC;
+    consRisp=(asG*asC)/durataAmm;
+  } else if(tech==='formlabs'){
+    consLabel='Resin tank (Formlabs)';
+    var flC=gv('flCosto'),flV=gv('flVita'),flL=gv('flLayer'),flA=gv('flAltPezzo'),flG=gv('flGratis');
+    var stratiPz=flL>0?flA/flL:0;
+    var stratiAnno=pzTotAnno*stratiPz;
+    if(flV>0&&stratiAnno>0) consLordo=(stratiAnno/flV)*flC;
+    consRisp=(flG*flC)/durataAmm;
+  }
+  consNetto=Math.max(0,consLordo-consRisp);
+
+  gi('consLblLordo').textContent='► '+consLabel+' annuo (lordo)';
+  gi('consLordoVal').textContent=fmtE(consLordo);
+  gi('consRispVal').textContent=fmtE(consRisp);
+  gi('consNettoVal').textContent=fmtE(consNetto);
+  gi('consTab2Lbl').textContent=consLabel+' (netto gratuiti)';
+  gi('consTab2Val').textContent=fmtE(consNetto);
+
+  // COSTI FISSI TOTALI
+  var ammReale=Math.max(0,ammAnnuo);
+  var totCF=ammReale+serviceMedio+consAnnui+consNetto;
+  var cfOra=oreTotAnno>0?totCF/oreTotAnno:0;
+  gi('oreTotAnno').textContent=fmt(oreTotAnno)+' h';
+  gi('ammAnnuoTab2').textContent=fmtE(ammReale);
+  gi('serviceMedioTab2').textContent=fmtE(serviceMedio);
+  gi('consumabiliTab2').textContent=fmtE(consAnnui);
+  gi('totCostiFissi').textContent=fmtE(totCF);
+  gi('costoFissoOra').textContent='€ '+fmt(cfOra)+'/h';
+
+  // TAB 2: COSTO PEZZO + ECONOMIA
+  var tR=0,tC=0,tM=0;
+  prods.forEach(function(p,i){
+    var cMat=(p.gResina*p.euroResina/p.unitResina)+(p.gSupport*p.euroSupport/p.unitSupport);
+    var cEn=p.hPz*kw*costoKwh;
+    var cLav=p.minLav/60*costoOra;
+    var cFix=p.hPz*cfOra;
+    var cTot=cMat+cEn+cLav+cFix;
+    var rA=p.volAnno*p.prezzoVendita;
+    var cA=p.volAnno*(cMat+cEn+cFix);
+    var mA=rA-cA;
+    tR+=rA;tC+=cA;tM+=mA;
+
+    var a=p.volAnno>0;
+    var hdr=gi('costDetailTable_h'+i);if(hdr)hdr.textContent=p.nome;
+    var eh=gi('econTable_h'+i);if(eh)eh.textContent=p.nome;
+    var s=function(rid,val){var el=gi(rid+'_'+i);if(el)el.textContent=a?val:'–';};
+    s('rowVol',fmtI(p.volAnno));s('rowHpz',fmt(p.hPz));
+    s('rowMat','€ '+fmt(cMat));s('rowEn','€ '+fmt(cEn));s('rowLav','€ '+fmt(cLav));s('rowFix','€ '+fmt(cFix));s('rowTot','€ '+fmt(cTot));
+    s('eRowRic',fmtE(rA));s('eRowCos',fmtE(cA));s('eRowMar',fmtE(mA));s('eRowPct',rA>0?(mA/rA*100).toFixed(1)+'%':'–');
+
+    p._cMat=cMat;p._cEn=cEn;p._cLav=cLav;p._cFix=cFix;p._cTot=cTot;
+  });
+  var sT=function(rid,val){var el=gi(rid+'_T');if(el)el.textContent=val;};
+  sT('eRowRic',fmtE(tR));sT('eRowCos',fmtE(tC));sT('eRowMar',fmtE(tM));
+  sT('eRowPct',tR>0?((tM/tR)*100).toFixed(1)+'%':'–');
+
+  // TAB 3: SCENARIO
+  var scU=gv('scUtilizzo')/100,scR=gv('scRifac')/100,scS=gv('scSpreco')/100;
+  var fM=(1+scS)/(1-scR),fL=1/(1-scR);
+  gi('scFattMat').textContent=fmt(fM);gi('scFattLav').textContent=fmt(fL);
+
+  var oreEff=0;
+  prods.forEach(function(p){p._vE=Math.round(p.volAnno*scU);if(p._vE>0)oreEff+=p._vE*p.hPz;});
+  var cfOraSc=oreEff>0?totCF/oreEff:0;
+
+  var stR=0,stCV=0,stMC=0;
+  prods.forEach(function(p,i){
+    var cmS=p._cMat*fM,ceS=p._cEn*fL,clS=p._cLav*fL,cfS=p.hPz*cfOraSc;
+    var ctS=cmS+ceS+clS+cfS;
+    var cvPz=cmS+ceS+clS;
+    var mcPz=p.prezzoVendita-cvPz;
+    var rAS=p._vE*p.prezzoVendita,cvA=p._vE*cvPz,mcA=rAS-cvA;
+    stR+=rAS;stCV+=cvA;stMC+=mcA;
+
+    var a=p._vE>0;
+    var sh=gi('scCostTable_h'+i);if(sh)sh.textContent=p.nome;
+    var seh=gi('scEconTable_h'+i);if(seh)seh.textContent=p.nome;
+    var s=function(rid,val){var el=gi(rid+'_'+i);if(el)el.textContent=a?val:'–';};
+    s('sRowVol',fmtI(p._vE));s('sRowMat','€ '+fmt(cmS));s('sRowEn','€ '+fmt(ceS));s('sRowLav','€ '+fmt(clS));
+    s('sRowFix','€ '+fmt(cfS));s('sRowTot','€ '+fmt(ctS));s('sRowPrz',fmtE(p.prezzoVendita));s('sRowMgn','€ '+fmt(p.prezzoVendita-ctS));
+    s('seRowRic',fmtE(rAS));s('seRowCos',fmtE(cvA));s('seRowMar',fmtE(mcA));
+
+    p._mcPz=mcPz;
+  });
+  sT=function(rid,val){var el=gi(rid+'_T');if(el)el.textContent=val;};
+  sT('seRowRic',fmtE(stR));sT('seRowCos',fmtE(stCV));sT('seRowMar',fmtE(stMC));
+
+  var utile=stMC-totCF;
+  gi('seCF').textContent='− '+fmtE(totCF);
+  gi('seUtile').textContent=fmtE(utile);
+  gi('seMarginePct').textContent=stR>0?((utile/stR)*100).toFixed(1)+'%':'–';
+
+  // ROI & PAYBACK
+  var invN=Math.max(0,costoReale);
+  var roi=invN>0?utile/invN:0;
+  var pbM=utile>0?(invN/utile)*12:Infinity;
+  gi('roiVal').textContent=(roi*100).toFixed(0)+'%';
+  gi('paybackVal').textContent=pbM<999?pbM.toFixed(1):'N/A';
+  gi('roiInvest').textContent=fmtE(invN);
+  gi('roiUtile').textContent=fmtE(utile);
+
+  // BEP saturazione
+  var mc100=0;
+  prods.forEach(function(p){
+    if(p.volAnno>0){
+      var cv=(p._cMat*fM)+(p._cEn*fL)+(p._cLav*fL);
+      mc100+=p.volAnno*(p.prezzoVendita-cv);
+    }
+  });
+  gi('bepVal').textContent=(mc100>0?((totCF/mc100)*100).toFixed(1):'> 100')+'%';
+
+  // BEP per prodotto
+  var tvE=0;prods.forEach(function(p){tvE+=p._vE;});
+  prods.forEach(function(p,i){
+    var qCF=tvE>0?(p._vE/tvE)*totCF:0;
+    var vMin=p._mcPz>0?qCF/p._mcPz:Infinity;
+    gi('bp'+i+'n').textContent=p.nome;
+    gi('bp'+i+'m').textContent=p._vE>0?'€ '+fmt(p._mcPz):'–';
+    gi('bp'+i+'q').textContent=p._vE>0?fmtE(qCF):'–';
+    gi('bp'+i+'v').textContent=p._vE>0?Math.ceil(vMin)+' pz':'–';
+  });
+
+  // Aggiorna tooltip con valori correnti
+  buildTips();
+}
+
+/* === TOOLTIP SYSTEM === */
+var _tv={}; // tooltip values cache, populated by calcAll
+function showTip(key){
+  var d=_tv[key];if(!d)return;
+  gi('tipTitle').textContent=d.title;
+  gi('tipBody').innerHTML=d.body;
+  gi('tipOverlay').style.display='block';
+  gi('tipBox').style.display='block';
+}
+function closeTip(){
+  gi('tipOverlay').style.display='none';
+  gi('tipBox').style.display='none';
+}
+
+function buildTips(){
+  var t=_tv;
+  var totInv=gv('costoStampante')+gv('costoAccessori')+gv('costoPolim')+gv('costoLavaggio');
+  var contributi=gv('contributi'),aliquota=gv('aliquotaFiscale')/100;
+  var durataAmm=parseInt(gi('durataAmm').value)||3,quotaAmm=dm[durataAmm]||1/3;
+  var fascia=parseInt(gi('fasciaMagg').value)||0,percMagg=fascia/100;
+  var costoNetto=Math.max(0,totInv-contributi);
+  var magg=costoNetto*percMagg,baseImp=costoNetto+magg;
+  var quotaAnnua=baseImp*quotaAmm,rispTot=quotaAnnua*aliquota*durataAmm;
+  var costoReale=totInv-rispTot,ammAnnuo=costoReale/durataAmm;
+  var s1=gv('service1'),s2=gv('service2'),s3=gv('service3');
+  var serviceTot=0;for(var y=1;y<=durataAmm;y++){serviceTot+=(y===1?s1:y===2?s2:s3);}
+  var serviceMedio=serviceTot/durataAmm;
+  var consAnnui=gv('consumabili');
+  var prods=getProducts();
+  var oreTot=0,pzTot=0,litriTot=0;
+  prods.forEach(function(p){if(p.volAnno>0){oreTot+=p.volAnno*p.hPz;pzTot+=p.volAnno;litriTot+=p.volAnno*(p.gResina+p.gSupport)/1000;}});
+  var tech=gi('techType').value;
+  var consLordo=0,consRisp=0;
+  var ammReale=Math.max(0,ammAnnuo);
+  var scU=gv('scUtilizzo')/100,scR=gv('scRifac')/100,scS=gv('scSpreco')/100;
+  var fM=(1+scS)/(1-scR),fL=1/(1-scR);
+
+  // Rebuild tips
+  t.totInvestimento={title:'Totale Investimento',body:
+    '<div class="tip-formula"><b>Formula:</b><br>Stampante + Accessori + Polimerizzazione + Lavaggio</div>'+
+    '<div class="tip-calc">'+fmtE(gv('costoStampante'))+' + '+fmtE(gv('costoAccessori'))+' + '+fmtE(gv('costoPolim'))+' + '+fmtE(gv('costoLavaggio'))+' = <b>'+fmtE(totInv)+'</b></div>'+
+    '<div class="tip-note">Somma di tutte le voci di investimento iniziale inserite nella sezione A.</div>'};
+
+  t.iaCostoNetto={title:'Costo Netto Agevolabile',body:
+    '<div class="tip-formula"><b>Formula:</b><br>Totale Investimento − Contributi / Agevolazioni</div>'+
+    '<div class="tip-calc">'+fmtE(totInv)+' − '+fmtE(contributi)+' = <b>'+fmtE(costoNetto)+'</b></div>'+
+    '<div class="tip-note">Base su cui si calcola la maggiorazione dell\'iper-ammortamento. Se ci sono contributi (ZES, Sabatini, ecc.) si deducono prima.</div>'};
+
+  t.iaMagg={title:'Maggiorazione Iper-Ammortamento',body:
+    '<div class="tip-formula"><b>Formula:</b><br>Costo Netto × Percentuale Maggiorazione</div>'+
+    '<div class="tip-calc">'+fmtE(costoNetto)+' × '+fascia+'% = <b>'+fmtE(magg)+'</b></div>'+
+    '<div class="tip-note">La maggiorazione aumenta la base imponibile deducibile, non il costo reale del bene. Per beni fino a €2,5M la maggiorazione e del 180%.</div>'};
+
+  t.iaRisparmio={title:'Risparmio Fiscale Totale',body:
+    '<div class="tip-formula"><b>Formula:</b><br>Base Imponibile Maggiorata × Quota Ammortamento × Aliquota Fiscale × Anni</div>'+
+    '<div class="tip-formula">Base Imponibile = Costo Netto + Maggiorazione = '+fmtE(costoNetto)+' + '+fmtE(magg)+' = '+fmtE(baseImp)+'</div>'+
+    '<div class="tip-formula">Quota annua deducibile = '+fmtE(baseImp)+' × '+(quotaAmm*100).toFixed(1)+'% = '+fmtE(quotaAnnua)+'</div>'+
+    '<div class="tip-calc">Risparmio annuo = '+fmtE(quotaAnnua)+' × '+(aliquota*100).toFixed(1)+'% = '+fmtE(quotaAnnua*aliquota)+'<br>Risparmio TOTALE ('+durataAmm+' anni) = <b>'+fmtE(rispTot)+'</b></div>'+
+    '<div class="tip-note">Il risparmio fiscale e la riduzione di imposte ottenuta grazie alla maggiore base deducibile. Si distribuisce sugli anni di ammortamento.</div>'};
+
+  t.iaCostoReale={title:'Costo Netto Reale Post Iper-Ammortamento',body:
+    '<div class="tip-formula"><b>Formula:</b><br>Totale Investimento − Risparmio Fiscale Totale</div>'+
+    '<div class="tip-calc">'+fmtE(totInv)+' − '+fmtE(rispTot)+' = <b>'+fmtE(Math.max(0,costoReale))+'</b></div>'+
+    '<div class="tip-note">Quanto costa DAVVERO la macchina dopo aver incassato il beneficio fiscale dell\'iper-ammortamento. E il valore su cui si calcola l\'ammortamento annuo reale.</div>'};
+
+  t.iaAmmAnnuo={title:'Ammortamento Annuo sul Costo Netto Reale',body:
+    '<div class="tip-formula"><b>Formula:</b><br>Costo Netto Reale ÷ Anni di Ammortamento</div>'+
+    '<div class="tip-calc">'+fmtE(Math.max(0,costoReale))+' ÷ '+durataAmm+' anni = <b>'+fmtE(ammReale)+'/anno</b></div>'+
+    '<div class="tip-note">Quota annua che la macchina \"costa\" come ammortamento. Valore molto piu basso di un ammortamento ordinario grazie all\'iper-ammortamento.</div>'};
+
+  // Service
+  var sDettaglio='';
+  for(var y=1;y<=durataAmm;y++){var sv=(y===1?s1:y===2?s2:s3);sDettaglio+='Anno '+y+': '+fmtE(sv)+'<br>';}
+  t.serviceMedio={title:'Costo Service Medio Annuo',body:
+    '<div class="tip-formula"><b>Formula:</b><br>Somma costi service di ogni anno ÷ Anni di ammortamento</div>'+
+    '<div class="tip-formula">'+sDettaglio+'Totale: '+fmtE(serviceTot)+'</div>'+
+    '<div class="tip-calc">'+fmtE(serviceTot)+' ÷ '+durataAmm+' = <b>'+fmtE(serviceMedio)+'/anno</b></div>'+
+    '<div class="tip-note">Media dei costi di assistenza su tutto il periodo di ammortamento. Se i primi anni sono gratuiti (garanzia), la media risulta piu bassa.</div>'};
+
+  // Consumabili stampante
+  if(tech==='polyjet'){
+    var pjC=gv('pjCosto'),pjN=gv('pjNum'),pjV=gv('pjVita'),pjG=gv('pjGratis');
+    consLordo=pjV>0&&oreTot>0?(oreTot/pjV)*pjN*pjC:0;
+    consRisp=(pjG*pjC)/durataAmm;
+    t.consLordo={title:'Costo Testine Annuo (Lordo)',body:
+      '<div class="tip-formula"><b>Formula:</b><br>(Ore macchina annue ÷ Vita testina) × N. testine × Costo testina</div>'+
+      '<div class="tip-calc">('+fmt(oreTot)+' h ÷ '+fmtI(pjV)+' h) × '+pjN+' × '+fmtE(pjC)+' = <b>'+fmtE(consLordo)+'</b></div>'+
+      '<div class="tip-note">Ogni '+fmtI(pjV)+' ore di stampa si consumano le '+pjN+' testine fisiche della macchina.</div>'};
+    t.consRisp={title:'Risparmio Testine Gratuite',body:
+      '<div class="tip-formula"><b>Formula:</b><br>(N. testine gratuite × Costo testina) ÷ Anni ammortamento</div>'+
+      '<div class="tip-calc">('+pjG+' × '+fmtE(pjC)+') ÷ '+durataAmm+' = <b>'+fmtE(consRisp)+'/anno</b></div>'};
+  }else if(tech==='asiga'){
+    var asC=gv('asCosto'),asCap=gv('asCapacita'),asG=gv('asGratis');
+    consLordo=asCap>0&&litriTot>0?(litriTot/asCap)*asC:0;
+    consRisp=(asG*asC)/durataAmm;
+    t.consLordo={title:'Costo Vaschette Annuo (Lordo)',body:
+      '<div class="tip-formula"><b>Formula:</b><br>(Litri resina consumati/anno ÷ Capacita vaschetta) × Costo vaschetta</div>'+
+      '<div class="tip-calc">('+fmt(litriTot)+' L ÷ '+fmt(asCap)+' L) × '+fmtE(asC)+' = <b>'+fmtE(consLordo)+'</b></div>'+
+      '<div class="tip-note">I litri totali sono calcolati sommando (g resina + g support) × volume annuo di ogni prodotto, convertiti in litri.</div>'};
+    t.consRisp={title:'Risparmio Vaschette Gratuite',body:
+      '<div class="tip-formula"><b>Formula:</b><br>(N. vaschette gratuite × Costo vaschetta) ÷ Anni ammortamento</div>'+
+      '<div class="tip-calc">('+asG+' × '+fmtE(asC)+') ÷ '+durataAmm+' = <b>'+fmtE(consRisp)+'/anno</b></div>'};
+  }else if(tech==='formlabs'){
+    var flC=gv('flCosto'),flV=gv('flVita'),flL=gv('flLayer'),flA=gv('flAltPezzo'),flG=gv('flGratis');
+    var stratiPz=flL>0?flA/flL:0,stratiAnno=pzTot*stratiPz;
+    consLordo=flV>0&&stratiAnno>0?(stratiAnno/flV)*flC:0;
+    consRisp=(flG*flC)/durataAmm;
+    t.consLordo={title:'Costo Resin Tank Annuo (Lordo)',body:
+      '<div class="tip-formula"><b>Formula:</b><br>Strati/pezzo = Altezza pezzo ÷ Spessore strato = '+fmt(flA)+' ÷ '+fmt(flL)+' = '+fmtI(stratiPz)+' strati</div>'+
+      '<div class="tip-formula">Strati/anno = Pezzi totali annui × Strati/pezzo = '+fmtI(pzTot)+' × '+fmtI(stratiPz)+' = '+fmtI(stratiAnno)+'</div>'+
+      '<div class="tip-calc">('+fmtI(stratiAnno)+' strati ÷ '+fmtI(flV)+' vita) × '+fmtE(flC)+' = <b>'+fmtE(consLordo)+'</b></div>'};
+    t.consRisp={title:'Risparmio Tank Gratuiti',body:
+      '<div class="tip-formula"><b>Formula:</b><br>(N. tank gratuiti × Costo tank) ÷ Anni ammortamento</div>'+
+      '<div class="tip-calc">('+flG+' × '+fmtE(flC)+') ÷ '+durataAmm+' = <b>'+fmtE(consRisp)+'/anno</b></div>'};
+  }
+  var consNetto=Math.max(0,consLordo-consRisp);
+  t.consNetto={title:'Costo Consumabili Netto Annuo',body:
+    '<div class="tip-formula"><b>Formula:</b><br>Costo lordo annuo − Risparmio consumabili gratuiti</div>'+
+    '<div class="tip-calc">'+fmtE(consLordo)+' − '+fmtE(consRisp)+' = <b>'+fmtE(consNetto)+'</b></div>'};
+
+  // Ore macchina
+  var oreDetail='';prods.forEach(function(p){if(p.volAnno>0)oreDetail+=p.nome+': '+fmtI(p.volAnno)+' pz × '+fmt(p.hPz)+' h/pz = '+fmt(p.volAnno*p.hPz)+' h<br>';});
+  t.oreTotAnno={title:'Ore Macchina Totali Annue',body:
+    '<div class="tip-formula"><b>Formula:</b><br>Per ogni prodotto: Volume annuo × (Ore stampa/job ÷ Pezzi/job)<br>Poi si sommano tutti i prodotti.</div>'+
+    '<div class="tip-formula">'+oreDetail+'</div>'+
+    '<div class="tip-calc">Totale = <b>'+fmt(oreTot)+' ore/anno</b></div>'};
+
+  // Costi fissi
+  var totCF=ammReale+serviceMedio+consAnnui+consNetto;
+  t.totCostiFissi={title:'Totale Costi Fissi Annui',body:
+    '<div class="tip-formula"><b>Formula:</b><br>Ammortamento + Service medio + Consumabili processo + Consumabili stampante</div>'+
+    '<div class="tip-calc">'+fmtE(ammReale)+' + '+fmtE(serviceMedio)+' + '+fmtE(consAnnui)+' + '+fmtE(consNetto)+' = <b>'+fmtE(totCF)+'</b></div>'+
+    '<div class="tip-note">Sono i costi che ci sono sempre, indipendentemente da quanti pezzi si producono. Si ripartiscono poi proporzionalmente alle ore macchina di ogni prodotto.</div>'};
+
+  var cfOra=oreTot>0?totCF/oreTot:0;
+  t.costoFissoOra={title:'Costo Fisso per Ora Macchina',body:
+    '<div class="tip-formula"><b>Formula:</b><br>Totale Costi Fissi Annui ÷ Ore Macchina Totali Annue</div>'+
+    '<div class="tip-calc">'+fmtE(totCF)+' ÷ '+fmt(oreTot)+' h = <b>€ '+fmt(cfOra)+'/h</b></div>'+
+    '<div class="tip-note">Piu la macchina lavora, piu questo valore scende: il costo fisso si spalma su piu ore. Ogni prodotto \"assorbe\" questo costo in proporzione alle sue ore di stampa per pezzo.</div>'};
+
+  // Scenario
+  t.scFattMat={title:'Fattore Correttivo Materiale',body:
+    '<div class="tip-formula"><b>Formula:</b><br>(1 + Spreco%) ÷ (1 − Rifacimenti%)</div>'+
+    '<div class="tip-calc">(1 + '+gv('scSpreco')+'%) ÷ (1 − '+gv('scRifac')+'%)<br>= '+(1+scS).toFixed(2)+' ÷ '+(1-scR).toFixed(2)+' = <b>'+fmt(fM)+'</b></div>'+
+    '<div class="tip-note">Tiene conto sia dello spreco materiale (fondo cartuccia, avvio, supporto in eccesso) sia dei pezzi da rifare. Il costo materiale per pezzo va moltiplicato per questo fattore.</div>'};
+
+  t.scFattLav={title:'Fattore Correttivo Lavoro/Energia',body:
+    '<div class="tip-formula"><b>Formula:</b><br>1 ÷ (1 − Rifacimenti%)</div>'+
+    '<div class="tip-calc">1 ÷ (1 − '+gv('scRifac')+'%) = 1 ÷ '+(1-scR).toFixed(2)+' = <b>'+fmt(fL)+'</b></div>'+
+    '<div class="tip-note">Se l\'8% dei job va rifatto, il tempo di lavoro e l\'energia per pezzo \"buono\" aumentano di questo fattore. Lo spreco materiale non si applica qui.</div>'};
+
+  // ROI
+  var invN=Math.max(0,costoReale);
+  // ricalcolo utile per tip
+  var oreEff=0;prods.forEach(function(p){var vE=Math.round(p.volAnno*scU);if(vE>0)oreEff+=vE*p.hPz;});
+  var cfOraSc=oreEff>0?totCF/oreEff:0;
+  var stMC=0;prods.forEach(function(p){
+    var vE=Math.round(p.volAnno*scU);if(vE<=0)return;
+    var cMat=(p.gResina*p.euroResina/p.unitResina+p.gSupport*p.euroSupport/p.unitSupport);
+    var cv=cMat*fM+(p.hPz*gv('kw')*gv('costoKwh'))*fL+(p.minLav/60*gv('costoOra'))*fL;
+    stMC+=vE*(p.prezzoVendita-cv);
+  });
+  var utile=stMC-totCF;
+  var roi=invN>0?utile/invN:0;
+  var pbM=utile>0?(invN/utile)*12:Infinity;
+
+  t.roi={title:'ROI Annuo (Return on Investment)',body:
+    '<div class="tip-formula"><b>Formula:</b><br>Utile Operativo Annuo ÷ Investimento Netto × 100</div>'+
+    '<div class="tip-calc">'+fmtE(utile)+' ÷ '+fmtE(invN)+' = <b>'+(roi*100).toFixed(0)+'%</b></div>'+
+    '<div class="tip-note">Indica quanto \"rende\" ogni euro investito in un anno. Un ROI del 200% significa che in un anno la macchina genera 2 volte il suo costo netto in utile operativo.</div>'};
+
+  t.payback={title:'Payback (Tempo di Recupero)',body:
+    '<div class="tip-formula"><b>Formula:</b><br>(Investimento Netto ÷ Utile Operativo Annuo) × 12 mesi</div>'+
+    '<div class="tip-calc">('+fmtE(invN)+' ÷ '+fmtE(utile)+') × 12 = <b>'+(pbM<999?pbM.toFixed(1):'N/A')+' mesi</b></div>'+
+    '<div class="tip-note">Quanti mesi servono per recuperare interamente l\'investimento con i margini generati. Calcolato sullo scenario conservativo (saturazione '+gv('scUtilizzo')+'%, scarti '+gv('scRifac')+'%, spreco '+gv('scSpreco')+'%).</div>'};
+
+  // BEP
+  var mc100=0;prods.forEach(function(p){
+    if(p.volAnno<=0)return;
+    var cMat=(p.gResina*p.euroResina/p.unitResina+p.gSupport*p.euroSupport/p.unitSupport);
+    var cv=cMat*fM+(p.hPz*gv('kw')*gv('costoKwh'))*fL+(p.minLav/60*gv('costoOra'))*fL;
+    mc100+=p.volAnno*(p.prezzoVendita-cv);
+  });
+  var satMin=mc100>0?totCF/mc100:1;
+  t.bep={title:'Saturazione Minima di Pareggio (Break-Even)',body:
+    '<div class="tip-formula"><b>Formula:</b><br>Costi Fissi Annui ÷ Margine di Contribuzione Totale al 100%</div>'+
+    '<div class="tip-calc">'+fmtE(totCF)+' ÷ '+fmtE(mc100)+' = <b>'+(satMin*100).toFixed(1)+'%</b></div>'+
+    '<div class="tip-note">La percentuale minima di utilizzo della macchina necessaria per coprire tutti i costi fissi. Al di sopra di questa soglia, ogni pezzo prodotto genera utile netto.</div>'};
+
+  t.roiUtile={title:'Utile Operativo Annuo (Scenario Conservativo)',body:
+    '<div class="tip-formula"><b>Formula:</b><br>Margine di Contribuzione Totale − Costi Fissi Annui</div>'+
+    '<div class="tip-calc">'+fmtE(stMC)+' − '+fmtE(totCF)+' = <b>'+fmtE(utile)+'</b></div>'+
+    '<div class="tip-note">Margine di contribuzione = Ricavi − Costi variabili (materiale, energia, manodopera, corretti per scarti e spreco). Da questo si sottraggono i costi fissi (ammortamento, service, consumabili stampante).</div>'};
+}
+
+/* === INIT === */
+buildProdTable();
+buildAllTables();
+calcAll();
+</script>
+
+</body>
+</html>
