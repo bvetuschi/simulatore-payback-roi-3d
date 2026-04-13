@@ -139,4 +139,3 @@ Costo orario operatore (lordo azienda)
 €/ora
 A soli fini illustrativi. Non sostituisce consulenza fiscale o analisi finanziaria professionale.
 Simulatore Iper-Ammortamento 2026  |  © 2026
-
