@@ -78,10 +78,24 @@ hr.sep{border:none;border-top:1px dashed #dce5ec;margin:12px 0}
 .tech-panel{transition:.2s}
 .overflow-x{overflow-x:auto}
 @media print{
-  body{background:#fff}
+  body{background:#fff;margin:0;padding:0}
   .tabs,.print-btn,.no-print{display:none!important}
-  .panel{display:block!important;box-shadow:none;border:none;margin:0;max-width:100%;page-break-inside:avoid}
-  .header{padding:10px 16px}
+  .panel{display:block!important;box-shadow:none;border:none;margin:0;padding:10px 14px;max-width:100%}
+  .header{padding:8px 16px;margin-bottom:4px;background:#1a3a4a!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .header h1{font-size:1.1rem;margin:0}
+  .header p{font-size:.72rem;margin:2px 0 0}
+  .section{margin-bottom:8px;padding:10px;page-break-inside:avoid}
+  .section-title{font-size:.85rem;padding:6px 10px;margin-bottom:6px}
+  .result-box{margin-bottom:6px;padding:8px}
+  .cost-table{font-size:.7rem}
+  .cost-table th,.cost-table td{padding:3px 6px}
+  .row{padding:4px 0;min-height:auto}
+  .row label{font-size:.78rem}
+  .grid-3{gap:8px}
+  .big-result{padding:10px;margin-bottom:8px}
+  .big-result .num{font-size:1.5rem}
+  .tip-icon{display:none}
+  input,select{border:1px solid #ccc!important;font-size:.72rem!important;padding:2px 4px!important}
 }
 @media(max-width:700px){
   .row label{flex:1 1 100%}
@@ -339,6 +353,7 @@ hr.sep{border:none;border-top:1px dashed #dce5ec;margin:12px 0}
     <table class="cost-table" id="econTable">
       <thead><tr><th>Voce</th></tr></thead>
       <tbody>
+        <tr id="eRowPrz" style="background:#e6f6ed"><td>Prezzo di vendita €</td></tr>
         <tr id="eRowRic"><td>Ricavi annui</td></tr>
         <tr id="eRowCos"><td>Costi totali annui</td></tr>
         <tr id="eRowMar" class="total"><td>► Margine lordo</td></tr>
@@ -453,13 +468,13 @@ hr.sep{border:none;border-top:1px dashed #dce5ec;margin:12px 0}
 /* === CONFIG === */
 /* uRes/uSup: 1100=per 1100g (PolyJet), 1000=per 1L, 1000k=per 1kg */
 var PRODUCTS=[
-  {nome:'Protesi completa',    volMese:10, gRes:30,eRes:600,uRes:1100,gSup:20,eSup:150,uSup:1100,hJob:6,pzJob:24,minLav:7,  prezzo:250},
-  {nome:'Protesi parziale',    volMese:10, gRes:18,eRes:600,uRes:1100,gSup:12,eSup:150,uSup:1100,hJob:5,pzJob:24,minLav:5,  prezzo:150},
-  {nome:'Modello studio',      volMese:80, gRes:45,eRes:96, uRes:1100,gSup:15,eSup:57, uSup:1100,hJob:3,pzJob:25,minLav:2,  prezzo:25},
-  {nome:'Modello restauro',    volMese:50, gRes:40,eRes:96, uRes:1100,gSup:12,eSup:57, uSup:1100,hJob:3,pzJob:20,minLav:2.5,prezzo:30},
-  {nome:'Dima chirurgica',     volMese:8,  gRes:25,eRes:312,uRes:1100,gSup:10,eSup:57, uSup:1100,hJob:8,pzJob:12,minLav:3,  prezzo:150},
-  {nome:'Bite occlusale',      volMese:15, gRes:35,eRes:200,uRes:1100,gSup:18,eSup:57, uSup:1100,hJob:4,pzJob:16,minLav:4,  prezzo:80},
-  {nome:'Carico imm./provv.',  volMese:5,  gRes:50,eRes:600,uRes:1100,gSup:30,eSup:150,uSup:1100,hJob:7,pzJob:8, minLav:10, prezzo:350}
+  {nome:'Protesi completa',    volMese:10, gRes:30,eRes:600,uRes:1100,gSup:20,eSup:150,uSup:1100,hJob:6,pzJob:24,minLav:7,  prezzo:0},
+  {nome:'Protesi parziale',    volMese:10, gRes:18,eRes:600,uRes:1100,gSup:12,eSup:150,uSup:1100,hJob:5,pzJob:24,minLav:5,  prezzo:0},
+  {nome:'Modello studio',      volMese:80, gRes:45,eRes:96, uRes:1100,gSup:15,eSup:57, uSup:1100,hJob:3,pzJob:25,minLav:2,  prezzo:0},
+  {nome:'Modello restauro',    volMese:50, gRes:40,eRes:96, uRes:1100,gSup:12,eSup:57, uSup:1100,hJob:3,pzJob:20,minLav:2.5,prezzo:0},
+  {nome:'Dima chirurgica',     volMese:8,  gRes:25,eRes:312,uRes:1100,gSup:10,eSup:57, uSup:1100,hJob:8,pzJob:12,minLav:3,  prezzo:0},
+  {nome:'Bite occlusale',      volMese:15, gRes:35,eRes:200,uRes:1100,gSup:18,eSup:57, uSup:1100,hJob:4,pzJob:16,minLav:4,  prezzo:0},
+  {nome:'Carico imm./provv.',  volMese:5,  gRes:50,eRes:600,uRes:1100,gSup:30,eSup:150,uSup:1100,hJob:7,pzJob:8, minLav:10, prezzo:0}
 ];
 var NP=PRODUCTS.length;
 var dm={3:1/3,4:0.25,5:0.20,8:0.125};
@@ -492,22 +507,21 @@ function onFlModello(){gi('flCosto').value=gi('flModello').value;}
 /* === BUILD PRODUCT TABLE === */
 function buildProdTable(){
   var tb=gi('prodBody');tb.innerHTML='';
-  var ins='style="color:#0000ff" oninput="calcAll()"';
   var unitSel='<select onchange="calcAll()" style="width:68px;text-align:left;font-size:.72rem;color:#0000ff;padding:3px 2px"><option value="1100">1100g (g/pz)</option><option value="1000">1 Lt (ml/pz)</option><option value="1000k">1 Kg (g/pz)</option></select>';
   PRODUCTS.forEach(function(p,i){
     var s='<tr>';
     s+='<td><input type="text" value="'+p.nome+'" style="width:120px;text-align:left;border:1px solid #ccc;border-radius:3px;padding:3px 5px" oninput="calcAll()"></td>';
-    s+='<td><input type="number" value="'+p.volMese+'" '+ins+' style="width:50px;text-align:right;color:#0000ff"></td>';
-    s+='<td><input type="number" value="'+p.gRes+'" '+ins+' style="width:45px;text-align:right;color:#0000ff"></td>';
-    s+='<td><input type="number" value="'+p.eRes+'" '+ins+' style="width:45px;text-align:right;color:#0000ff"></td>';
+    s+='<td><input type="number" value="'+p.volMese+'" oninput="calcAll()" style="width:50px;text-align:right;color:#0000ff"></td>';
+    s+='<td><input type="number" value="'+p.gRes+'" oninput="calcAll()" style="width:45px;text-align:right;color:#0000ff"></td>';
+    s+='<td><input type="number" value="'+p.eRes+'" oninput="calcAll()" style="width:45px;text-align:right;color:#0000ff"></td>';
     s+='<td>'+unitSel.replace('value="'+p.uRes+'"','value="'+p.uRes+'" selected')+'</td>';
-    s+='<td><input type="number" value="'+p.gSup+'" '+ins+' style="width:45px;text-align:right;color:#0000ff"></td>';
-    s+='<td><input type="number" value="'+p.eSup+'" '+ins+' style="width:45px;text-align:right;color:#0000ff"></td>';
+    s+='<td><input type="number" value="'+p.gSup+'" oninput="calcAll()" style="width:45px;text-align:right;color:#0000ff"></td>';
+    s+='<td><input type="number" value="'+p.eSup+'" oninput="calcAll()" style="width:45px;text-align:right;color:#0000ff"></td>';
     s+='<td>'+unitSel.replace('value="'+p.uSup+'"','value="'+p.uSup+'" selected')+'</td>';
-    s+='<td><input type="number" value="'+p.hJob+'" step="0.5" '+ins+' style="width:42px;text-align:right;color:#0000ff"></td>';
-    s+='<td><input type="number" value="'+p.pzJob+'" '+ins+' style="width:38px;text-align:right;color:#0000ff"></td>';
-    s+='<td><input type="number" value="'+p.minLav+'" step="0.5" '+ins+' style="width:42px;text-align:right;color:#0000ff"></td>';
-    s+='<td><input type="number" value="'+p.prezzo+'" '+ins+' style="width:55px;text-align:right;color:#0000ff"></td>';
+    s+='<td><input type="number" value="'+p.hJob+'" step="0.5" oninput="calcAll()" style="width:42px;text-align:right;color:#0000ff"></td>';
+    s+='<td><input type="number" value="'+p.pzJob+'" oninput="calcAll()" style="width:38px;text-align:right;color:#0000ff"></td>';
+    s+='<td><input type="number" value="'+p.minLav+'" step="0.5" oninput="calcAll()" style="width:42px;text-align:right;color:#0000ff"></td>';
+    s+='<td><input type="number" value="'+p.prezzo+'" oninput="calcAll()" style="width:55px;text-align:right;color:#0000ff"></td>';
     s+='</tr>';
     tb.innerHTML+=s;
   });
@@ -536,6 +550,15 @@ function buildAllTables(){
   var n=NP;
   ensureCols('costDetailTable',['rowVol','rowHpz','rowMat','rowEn','rowLav','rowFix','rowTot'],n);
   ensureCols('econTable',['eRowRic','eRowCos','eRowMar','eRowPct'],n);
+  // Price input row in economy table
+  var przRow=gi('eRowPrz');
+  while(przRow.children.length>1)przRow.removeChild(przRow.lastChild);
+  for(var i=0;i<n;i++){
+    var td=document.createElement('td');
+    td.innerHTML='<input type="number" id="ePrz_'+i+'" value="0" oninput="syncPrice('+i+');calcAll()" style="width:60px;text-align:right;color:#0000ff;font-weight:600">';
+    przRow.appendChild(td);
+  }
+  var tdPrzT=document.createElement('td');tdPrzT.style.fontWeight='700';tdPrzT.textContent='';przRow.appendChild(tdPrzT);
   ensureCols('scCostTable',['sRowVol','sRowMat','sRowEn','sRowLav','sRowFix','sRowTot','sRowPrz','sRowMgn'],n);
   ensureCols('scEconTable',['seRowRic','seRowCos','seRowMar'],n);
   // special rows for scEcon
@@ -556,6 +579,27 @@ function buildAllTables(){
   for(var i=0;i<n;i++){
     bepB.innerHTML+='<tr><td id="bp'+i+'n">–</td><td id="bp'+i+'m">–</td><td id="bp'+i+'q">–</td><td id="bp'+i+'v">–</td></tr>';
   }
+}
+
+/* === SYNC PRICE: economy table ↔ product table === */
+function syncPrice(idx){
+  var ePrz=gi('ePrz_'+idx);
+  if(!ePrz)return;
+  var val=parseFloat(ePrz.value)||0;
+  // Update Tab 1 product table input (column 10 = prezzo, 0-indexed among inputs)
+  var rows=gi('prodBody').querySelectorAll('tr');
+  if(rows[idx]){
+    var inp=rows[idx].querySelectorAll('input');
+    if(inp[9])inp[9].value=val;
+  }
+}
+function syncPriceFromTab1(idx){
+  var rows=gi('prodBody').querySelectorAll('tr');
+  if(!rows[idx])return;
+  var inp=rows[idx].querySelectorAll('input');
+  var val=parseFloat(inp[9]?inp[9].value:0)||0;
+  var ePrz=gi('ePrz_'+idx);
+  if(ePrz)ePrz.value=val;
 }
 
 /* === READ PRODUCTS FROM TABLE === */
@@ -671,6 +715,8 @@ function calcAll(){
   gi('costoFissoOra').textContent='€ '+fmt(cfOra)+'/h';
 
   // TAB 2: COSTO PEZZO + ECONOMIA
+  // Sync prices Tab1 → Tab2 economy inputs
+  prods.forEach(function(p,i){syncPriceFromTab1(i);});
   var tR=0,tC=0,tM=0;
   prods.forEach(function(p,i){
     var cMat=(p.gResina*p.euroResina/p.unitResina)+(p.gSupport*p.euroSupport/p.unitSupport);
@@ -684,18 +730,23 @@ function calcAll(){
     tR+=rA;tC+=cA;tM+=mA;
 
     var a=p.volAnno>0;
+    var hp=p.prezzoVendita>0; // ha prezzo?
     var hdr=gi('costDetailTable_h'+i);if(hdr)hdr.textContent=p.nome;
     var eh=gi('econTable_h'+i);if(eh)eh.textContent=p.nome;
     var s=function(rid,val){var el=gi(rid+'_'+i);if(el)el.textContent=a?val:'–';};
     s('rowVol',fmtI(p.volAnno));s('rowHpz',fmt(p.hPz));
     s('rowMat','€ '+fmt(cMat));s('rowEn','€ '+fmt(cEn));s('rowLav','€ '+fmt(cLav));s('rowFix','€ '+fmt(cFix));s('rowTot','€ '+fmt(cTot));
-    s('eRowRic',fmtE(rA));s('eRowCos',fmtE(cA));s('eRowMar',fmtE(mA));s('eRowPct',rA>0?(mA/rA*100).toFixed(1)+'%':'–');
+    var np=a&&!hp?'inserire prezzo':'';
+    s('eRowRic',a?(hp?fmtE(rA):np):'–');s('eRowCos',a?fmtE(cA):'–');s('eRowMar',a?(hp?fmtE(mA):np):'–');s('eRowPct',a?(hp&&rA>0?(mA/rA*100).toFixed(1)+'%':np):'–');
 
     p._cMat=cMat;p._cEn=cEn;p._cLav=cLav;p._cFix=cFix;p._cTot=cTot;
   });
   var sT=function(rid,val){var el=gi(rid+'_T');if(el)el.textContent=val;};
-  sT('eRowRic',fmtE(tR));sT('eRowCos',fmtE(tC));sT('eRowMar',fmtE(tM));
-  sT('eRowPct',tR>0?((tM/tR)*100).toFixed(1)+'%':'–');
+  var hasAnyPrice=prods.some(function(p){return p.volAnno>0&&p.prezzoVendita>0;});
+  var noPrice=!hasAnyPrice&&prods.some(function(p){return p.volAnno>0;});
+  var npMsg='inserire prezzi di vendita';
+  sT('eRowRic',noPrice?npMsg:fmtE(tR));sT('eRowCos',fmtE(tC));sT('eRowMar',noPrice?npMsg:fmtE(tM));
+  sT('eRowPct',noPrice?'–':(tR>0?((tM/tR)*100).toFixed(1)+'%':'–'));
 
   // TAB 3: SCENARIO
   var scU=gv('scUtilizzo')/100,scR=gv('scRifac')/100,scS=gv('scSpreco')/100;
@@ -716,31 +767,38 @@ function calcAll(){
     stR+=rAS;stCV+=cvA;stMC+=mcA;
 
     var a=p._vE>0;
+    var hp=p.prezzoVendita>0;
     var sh=gi('scCostTable_h'+i);if(sh)sh.textContent=p.nome;
     var seh=gi('scEconTable_h'+i);if(seh)seh.textContent=p.nome;
     var s=function(rid,val){var el=gi(rid+'_'+i);if(el)el.textContent=a?val:'–';};
     s('sRowVol',fmtI(p._vE));s('sRowMat','€ '+fmt(cmS));s('sRowEn','€ '+fmt(ceS));s('sRowLav','€ '+fmt(clS));
-    s('sRowFix','€ '+fmt(cfS));s('sRowTot','€ '+fmt(ctS));s('sRowPrz',fmtE(p.prezzoVendita));s('sRowMgn','€ '+fmt(p.prezzoVendita-ctS));
-    s('seRowRic',fmtE(rAS));s('seRowCos',fmtE(cvA));s('seRowMar',fmtE(mcA));
+    s('sRowFix','€ '+fmt(cfS));s('sRowTot','€ '+fmt(ctS));
+    var npS=a&&!hp?'inserire prezzo':'';
+    s('sRowPrz',a?(hp?fmtE(p.prezzoVendita):npS):'–');
+    s('sRowMgn',a?(hp?'€ '+fmt(p.prezzoVendita-ctS):npS):'–');
+    s('seRowRic',a?(hp?fmtE(rAS):npS):'–');s('seRowCos',a?fmtE(cvA):'–');s('seRowMar',a?(hp?fmtE(mcA):npS):'–');
 
     p._mcPz=mcPz;
   });
   sT=function(rid,val){var el=gi(rid+'_T');if(el)el.textContent=val;};
-  sT('seRowRic',fmtE(stR));sT('seRowCos',fmtE(stCV));sT('seRowMar',fmtE(stMC));
+  var hasAnyPriceSc=prods.some(function(p){return p._vE>0&&p.prezzoVendita>0;});
+  var noPriceSc=!hasAnyPriceSc&&prods.some(function(p){return p._vE>0;});
+  var npMsgSc='inserire prezzi di vendita';
+  sT('seRowRic',noPriceSc?npMsgSc:fmtE(stR));sT('seRowCos',fmtE(stCV));sT('seRowMar',noPriceSc?npMsgSc:fmtE(stMC));
 
   var utile=stMC-totCF;
   gi('seCF').textContent='− '+fmtE(totCF);
-  gi('seUtile').textContent=fmtE(utile);
-  gi('seMarginePct').textContent=stR>0?((utile/stR)*100).toFixed(1)+'%':'–';
+  gi('seUtile').textContent=noPriceSc?npMsgSc:fmtE(utile);
+  gi('seMarginePct').textContent=noPriceSc?'–':(stR>0?((utile/stR)*100).toFixed(1)+'%':'–');
 
   // ROI & PAYBACK
   var invN=Math.max(0,costoReale);
-  var roi=invN>0?utile/invN:0;
-  var pbM=utile>0?(invN/utile)*12:Infinity;
-  gi('roiVal').textContent=(roi*100).toFixed(0)+'%';
-  gi('paybackVal').textContent=pbM<999?pbM.toFixed(1):'N/A';
+  var roi=invN>0&&!noPriceSc?utile/invN:0;
+  var pbM=utile>0&&!noPriceSc?(invN/utile)*12:Infinity;
+  gi('roiVal').textContent=noPriceSc?npMsgSc:(roi*100).toFixed(0)+'%';
+  gi('paybackVal').textContent=noPriceSc?npMsgSc:(pbM<999?pbM.toFixed(1)+' mesi':'N/A');
   gi('roiInvest').textContent=fmtE(invN);
-  gi('roiUtile').textContent=fmtE(utile);
+  gi('roiUtile').textContent=noPriceSc?npMsgSc:fmtE(utile);
 
   // BEP saturazione
   var mc100=0;
@@ -750,17 +808,18 @@ function calcAll(){
       mc100+=p.volAnno*(p.prezzoVendita-cv);
     }
   });
-  gi('bepVal').textContent=(mc100>0?((totCF/mc100)*100).toFixed(1):'> 100')+'%';
+  gi('bepVal').textContent=noPriceSc?npMsgSc:(mc100>0?((totCF/mc100)*100).toFixed(1):'> 100')+'%';
 
   // BEP per prodotto
   var tvE=0;prods.forEach(function(p){tvE+=p._vE;});
   prods.forEach(function(p,i){
     var qCF=tvE>0?(p._vE/tvE)*totCF:0;
+    var hp=p.prezzoVendita>0;
     var vMin=p._mcPz>0?qCF/p._mcPz:Infinity;
     gi('bp'+i+'n').textContent=p.nome;
-    gi('bp'+i+'m').textContent=p._vE>0?'€ '+fmt(p._mcPz):'–';
+    gi('bp'+i+'m').textContent=p._vE>0?(hp?'€ '+fmt(p._mcPz):'inserire prezzo'):'–';
     gi('bp'+i+'q').textContent=p._vE>0?fmtE(qCF):'–';
-    gi('bp'+i+'v').textContent=p._vE>0?Math.ceil(vMin)+' pz':'–';
+    gi('bp'+i+'v').textContent=p._vE>0?(hp?Math.ceil(vMin)+' pz':'inserire prezzo'):'–';
   });
 
   // Aggiorna tooltip con valori correnti
