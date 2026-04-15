@@ -109,7 +109,7 @@ hr.sep{border:none;border-top:1px dashed #dce5ec;margin:12px 0}
 
 /* ========= LOGO RIVENDITORE ========= */
 .logo-bar{background:#fff;border-bottom:2px solid #dce5ec;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;max-width:100%}
-.logo-img-wrap{position:relative;display:inline-flex;align-items:center;justify-content:center;width:100px;height:56px;border:2px dashed #b8c6d1;border-radius:7px;overflow:hidden;background:#f7f9fb;cursor:pointer;transition:.15s}
+.logo-img-wrap{position:relative;display:inline-flex;align-items:center;justify-content:center;width:140px;height:72px;border:2px dashed #b8c6d1;border-radius:7px;overflow:hidden;background:#f7f9fb;cursor:pointer;transition:.15s}
 .logo-img-wrap:hover{border-color:#2c5f6e;background:#eef4ff}
 .logo-img-wrap img{max-width:100%;max-height:100%;object-fit:contain}
 .logo-img-wrap .logo-ph{font-size:.65rem;color:#aaa;text-align:center;line-height:1.3;pointer-events:none;padding:4px}
@@ -122,7 +122,7 @@ hr.sep{border:none;border-top:1px dashed #dce5ec;margin:12px 0}
 .logo-btn.lb-primary:hover{background:#1a3a4a}
 .logo-btn.lb-danger{color:#c0392b;border-color:#e8b8b8}
 .logo-btn.lb-danger:hover{background:#fde8e8}
-@media print{.logo-bar{display:flex!important;background:#fff!important;border-bottom:1px solid #ccc!important;padding:8px 16px!important;page-break-inside:avoid}.logo-img-wrap{border:none!important;background:transparent!important}.logo-actions{display:none!important}.logo-riv-name{color:#1a3a4a!important;font-size:.85rem!important}}
+@media print{.logo-bar{display:flex!important;background:#fff!important;border-bottom:1px solid #ccc!important;padding:8px 16px!important;page-break-inside:avoid}.logo-img-wrap{border:none!important;background:transparent!important;width:140px!important;height:72px!important}.logo-actions{display:none!important}.logo-riv-name{color:#1a3a4a!important;font-size:.85rem!important}}
 @media(max-width:700px){.logo-bar{flex-direction:column;align-items:flex-start}.logo-riv-name{max-width:100%}}
 </style>
 </head>
@@ -167,8 +167,8 @@ hr.sep{border:none;border-top:1px dashed #dce5ec;margin:12px 0}
   </div>
 </div>
 <input type="file" id="logoFileInput" accept="image/*" style="display:none" onchange="loadLogo(this)">
-<div id="logoPrintBar" style="display:none;background:#fff;border-bottom:1px solid #ccc;padding:8px 20px;align-items:center;gap:20px">
-  <img id="logoPrintImg" src="" alt="" style="max-height:48px;max-width:100px;object-fit:contain">
+<div id="logoPrintBar" style="display:none;background:#fff;border-bottom:2px solid #dce5ec;padding:12px 24px;align-items:center;gap:24px">
+  <img id="logoPrintImg" src="" alt="" style="max-height:90px;max-width:180px;object-fit:contain">
   <div style="display:flex;flex-direction:column;gap:2px">
     <span id="logoPrintName" style="font-size:.9rem;font-weight:700;color:#1a3a4a"></span>
     <span id="logoPrintLab" style="font-size:.82rem;color:#444"></span>
