@@ -136,25 +136,44 @@ hr.sep{border:none;border-top:1px dashed #dce5ec;margin:12px 0}
 
 <!-- LOGO RIVENDITORE -->
 <div class="logo-bar no-print" id="logoBar">
-  <div style="display:flex;align-items:center;gap:14px">
-    <div class="logo-img-wrap" id="logoWrap" onclick="document.getElementById('logoFileInput').click()" title="Carica logo rivenditore">
+  <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+    <div class="logo-img-wrap" id="logoWrap" onclick="document.getElementById('logoFileInput').click()" title="Carica logo">
       <span class="logo-ph" id="logoPH">Logo<br>rivenditore</span>
-      <img id="logoImg" src="" alt="Logo rivenditore" style="display:none">
+      <img id="logoImg" src="" alt="Logo" style="display:none">
     </div>
     <div>
-      <div style="font-size:.68rem;color:#888;margin-bottom:2px">Rivenditore</div>
+      <div style="font-size:.62rem;color:#888;margin-bottom:1px;text-transform:uppercase;letter-spacing:.4px">Rivenditore</div>
       <input class="logo-riv-name" id="rivInput" type="text" value="" placeholder="Nome rivenditore">
+    </div>
+    <div style="width:1px;height:36px;background:#dce5ec;align-self:center"></div>
+    <div>
+      <div style="font-size:.62rem;color:#888;margin-bottom:1px;text-transform:uppercase;letter-spacing:.4px">Laboratorio / Studio</div>
+      <input class="logo-riv-name" id="labInput" type="text" value="" placeholder="Es. Lab Rossi Srl">
+    </div>
+    <div style="width:1px;height:36px;background:#dce5ec;align-self:center"></div>
+    <div>
+      <div style="font-size:.62rem;color:#888;margin-bottom:1px;text-transform:uppercase;letter-spacing:.4px">Stampante</div>
+      <select id="stampaSelect" style="font-size:.85rem;font-weight:600;color:#1a3a4a;border:none;background:transparent;outline:none;font-family:inherit;cursor:pointer;padding:2px 0">
+        <option value="">— Seleziona —</option>
+        <option value="Stratasys (PolyJet)">Stratasys (PolyJet)</option>
+        <option value="Asiga (DLP)">Asiga (DLP)</option>
+        <option value="Formlabs (SLA)">Formlabs (SLA)</option>
+      </select>
     </div>
   </div>
   <div class="logo-actions">
-    <button class="logo-btn lb-primary" onclick="document.getElementById('logoFileInput').click()">Carica logo</button>
-    <button class="logo-btn lb-danger" id="logoRmBtn" style="display:none" onclick="rmLogo()">Rimuovi</button>
+    <button class="logo-btn lb-p" onclick="document.getElementById('logoFileInput').click()">Carica logo</button>
+    <button class="logo-btn lb-d" id="logoRmBtn" style="display:none" onclick="rmLogo()">Rimuovi</button>
   </div>
 </div>
 <input type="file" id="logoFileInput" accept="image/*" style="display:none" onchange="loadLogo(this)">
-<div id="logoPrintBar" style="display:none;background:#fff;border-bottom:1px solid #ccc;padding:8px 20px;align-items:center;gap:14px">
+<div id="logoPrintBar" style="display:none;background:#fff;border-bottom:1px solid #ccc;padding:8px 20px;align-items:center;gap:20px">
   <img id="logoPrintImg" src="" alt="" style="max-height:48px;max-width:100px;object-fit:contain">
-  <span id="logoPrintName" style="font-size:.9rem;font-weight:700;color:#1a3a4a"></span>
+  <div style="display:flex;flex-direction:column;gap:2px">
+    <span id="logoPrintName" style="font-size:.9rem;font-weight:700;color:#1a3a4a"></span>
+    <span id="logoPrintLab" style="font-size:.82rem;color:#444"></span>
+    <span id="logoPrintStampa" style="font-size:.75rem;color:#888;font-style:italic"></span>
+  </div>
 </div>
 <!-- FINE LOGO RIVENDITORE -->
 
@@ -1071,12 +1090,13 @@ calcAll();
 
 /* === LOGO RIVENDITORE === */
 function loadLogo(input){var f=input.files[0];if(!f)return;if(f.size>2097152){alert('Max 2 MB');return;}var r=new FileReader();r.onload=function(e){setLogo(e.target.result);};r.readAsDataURL(f);input.value='';}
-function setLogo(u){document.getElementById('logoImg').src=u;document.getElementById('logoImg').style.display='block';document.getElementById('logoPH').style.display='none';document.getElementById('logoRmBtn').style.display='inline-block';document.getElementById('logoPrintImg').src=u;document.getElementById('logoPrintBar').style.display='flex';try{sessionStorage.setItem('lrv_img',u);}catch(e){}}
-function rmLogo(){document.getElementById('logoImg').src='';document.getElementById('logoImg').style.display='none';document.getElementById('logoPH').style.display='block';document.getElementById('logoRmBtn').style.display='none';document.getElementById('logoPrintImg').src='';document.getElementById('logoPrintBar').style.display='none';try{sessionStorage.removeItem('lrv_img');}catch(e){}}
-(function(){var ni=document.getElementById('rivInput');var pn=document.getElementById('logoPrintName');if(ni&&pn)ni.addEventListener('input',function(){pn.textContent=ni.value;try{sessionStorage.setItem('lrv_nome',ni.value);}catch(e){}});})();
+function setLogo(u){var i=document.getElementById('logoImg'),p=document.getElementById('logoPH'),b=document.getElementById('logoRmBtn'),pi=document.getElementById('logoPrintImg'),pb=document.getElementById('logoPrintBar');i.src=u;i.style.display='block';p.style.display='none';b.style.display='inline-block';pi.src=u;pb.style.display='flex';try{sessionStorage.setItem('lrv_img',u);}catch(e){}}
+function rmLogo(){var i=document.getElementById('logoImg'),p=document.getElementById('logoPH'),b=document.getElementById('logoRmBtn'),pi=document.getElementById('logoPrintImg'),pb=document.getElementById('logoPrintBar');i.src='';i.style.display='none';p.style.display='block';b.style.display='none';pi.src='';pb.style.display='none';try{sessionStorage.removeItem('lrv_img');}catch(e){}}
+function syncPrintBar(){var pn=document.getElementById('logoPrintName'),pl=document.getElementById('logoPrintLab'),ps=document.getElementById('logoPrintStampa');var ri=document.getElementById('rivInput'),li=document.getElementById('labInput'),si=document.getElementById('stampaSelect');if(pn)pn.textContent=ri?ri.value:'';if(pl)pl.textContent=li?li.value:'';if(ps)ps.textContent=si&&si.value?'Stampante: '+si.value:'';}
+(function(){['rivInput','labInput','stampaSelect'].forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('input',function(){syncPrintBar();try{sessionStorage.setItem('lrv_'+id,el.value);}catch(e){}});});})();
 (function(){var b=document.getElementById('logoBar');if(!b)return;b.addEventListener('dragover',function(e){e.preventDefault();});b.addEventListener('drop',function(e){e.preventDefault();var f=e.dataTransfer.files[0];if(!f||!f.type.startsWith('image/'))return;var r=new FileReader();r.onload=function(ev){setLogo(ev.target.result);};r.readAsDataURL(f);});})();
-(function(){try{var i=sessionStorage.getItem('lrv_img');var n=sessionStorage.getItem('lrv_nome');if(i)setLogo(i);if(n){var ni=document.getElementById('rivInput');var pn=document.getElementById('logoPrintName');if(ni)ni.value=n;if(pn)pn.textContent=n;}}catch(e){}})();
-(function(){var op=window.print.bind(window);window.print=function(){var pb=document.getElementById('logoPrintBar');var lb=document.getElementById('logoBar');var pi=document.getElementById('logoPrintImg');var ni=document.getElementById('rivInput');if((pi&&pi.src&&pi.src!==location.href)||(ni&&ni.value.trim()))if(pb)pb.style.display='flex';if(lb)lb.style.display='none';op();setTimeout(function(){if(lb)lb.style.display='flex';},500);};})();
+(function(){try{var img=sessionStorage.getItem('lrv_img');if(img)setLogo(img);['rivInput','labInput','stampaSelect'].forEach(function(id){var v=sessionStorage.getItem('lrv_'+id);if(v){var el=document.getElementById(id);if(el)el.value=v;}});syncPrintBar();}catch(e){}})();
+(function(){var op=window.print.bind(window);window.print=function(){var pb=document.getElementById('logoPrintBar'),lb=document.getElementById('logoBar'),pi=document.getElementById('logoPrintImg'),ni=document.getElementById('rivInput'),li=document.getElementById('labInput');syncPrintBar();if((pi&&pi.src&&pi.src!==location.href)||(ni&&ni.value.trim())||(li&&li.value.trim()))if(pb)pb.style.display='flex';if(lb)lb.style.display='none';op();setTimeout(function(){if(lb)lb.style.display='flex';},500);};})();
 /* === FINE LOGO RIVENDITORE === */
 </script>
 
