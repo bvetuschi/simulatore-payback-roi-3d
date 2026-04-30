@@ -1,141 +1,55 @@
-Simulatore Payback & ROI – Stampanti 3D Dentali
-Calcolo costo per pezzo, margine, ROI e payback per investimenti in stampa 3D
-🖨 Stampa / Salva PDF
-Testo blu = input modificabile  |  Testo nero = formula calcolata  |  Tocca un risultato con ⓘ per vedere la formula
-Ipotesi & Investimento
-Analisi Costi
-Scenario & ROI
-A. INVESTIMENTO INIZIALE
-Stampante 3D (modello / descrizione)
+# Simulatore Payback & ROI – Stampanti 3D Dentali
 
-Costo stampante + starter package
+**Strumento proprietario di analisi economico-finanziaria per investimenti in stampa 3D dentale.**
 
-€
-Accessori (estrattore aria, scanner kit, ecc.)
+Calcolo integrato di costo per pezzo, margine, ROI, payback e volume minimo di pareggio per stampanti 3D in laboratorio odontotecnico e studio dentistico, con integrazione del calcolo iper-ammortamento 2026.
 
-€
-Camera di polimerizzazione
+🌐 **Strumento online:** https://bvetuschi.github.io/simulatore-payback-roi-3d/
 
-€
-Stazione di lavaggio
+---
 
-€
-► TOTALE INVESTIMENTO
-€ 71.336
-B. IPER-AMMORTAMENTO (CALCOLO INTEGRATO)
-Contributi / agevolazioni sul bene
+## 🔧 Tecnologie supportate
 
-€
-Tipo soggetto fiscale
-        SRL / SPA – IRES 24% + IRAP 3,9% = 27,9%
-        Reddito fino a 28.000 – IRPEF 23% + IRAP 3,9%
-        Reddito 28.001-50.000 – IRPEF 33% + IRAP 3,9%
-        Reddito oltre 50.000 – IRPEF 43% + IRAP 3,9%
-        Personalizzata
-      
-Aliquota fiscale
+- **Stratasys** (PolyJet) — modellazione costi testine di stampa
+- **Asiga** (DLP) — modellazione costi build tray con catalogo modelli
+- **Formlabs** (SLA) — modellazione costi resin tank per Form 4B / Form 4L
 
-%
-Durata ammortamento
-        3 anni – 33,3%
-        4 anni – 25%
-        5 anni – 20%
-        8 anni – 12,5%
-      
-Fascia di maggiorazione
-        Fino a €2.500.000 → +180%
-        €2.500.001 – 10.000.000 → +100%
-        €10.000.001 – 20.000.000 → +50%
-        Nessuna maggiorazione
-      
-Costo netto agevolabile
-–
-Maggiorazione
-–
-Risparmio fiscale TOTALE
-–
-★ COSTO NETTO REALE post iper-ammortamento
-–
-Ammortamento annuo sul costo netto reale
-–
-Calcolo basato su L. 199/2025 e D.L. n. 38/2026. Bene interconnesso Allegati IV-V. Non sostituisce consulenza fiscale.
-→ Apri simulatore iperammortamento completo
-C. ASSISTENZA TECNICA & SERVICE
-Service anno 1 (garanzia inclusa?)
+---
 
-€/anno
-Service anno 2
+## ⚖️ Natura proprietaria e licenza
 
-€/anno
-Service anno 3+
+Questo software è **proprietario** e rappresenta una metodologia di consulenza strategica codificata. Include modelli di costo, parametri di scenario, listini di riferimento e logiche analitiche frutto dell'esperienza professionale della titolare.
 
-€/anno
-Budget consumabili processo (soda, glicerina, IPA, filtri, ecc.)
+Tutti i diritti sono riservati a Barbara Vetuschi.
 
-€/anno
-► Costo service medio/anno (su durata ammortamento)
-–
-D. CONSUMABILI STAMPANTE (TESTINE / VASCHETTE / TANK)
-Tecnologia stampante
-        PolyJet (Stratasys)
-        DLP (Asiga)
-        SLA (Formlabs)
-      
+Sono **vietati**, salvo esplicito permesso scritto:
+- copia, modifica, ridistribuzione del codice o dei modelli di calcolo;
+- utilizzo a fini commerciali, di consulenza, formazione o promozione di prodotti o servizi propri o di terzi;
+- creazione di opere derivate, versioni rebrandizzate o white-label non autorizzate;
+- estrazione di listini, parametri o logiche di scenario per uso indipendente.
 
-Testine di stampa – PolyJet (Stratasys)
-Costo singola testina
+Per i termini completi vedere il file [`LICENSE`](LICENSE).
 
-€
-Numero testine fisiche nella macchina
+L'uso del simulatore web pubblicato all'indirizzo ufficiale è consentito agli utenti finali a fini illustrativi e di valutazione di propri investimenti, senza trasferimento di diritti sul software sottostante.
 
-pz
-Ore vita media testina (stima)
+---
 
-ore
-Testine incluse gratuitamente
+## 📞 Contatti per uso commerciale
 
-pz
-► Costo consumabili stampante annuo (lordo)
-–
-Risparmio consumabili gratuiti/anno (su durata amm.)
-–
-► Costo consumabili NETTO annuo
-–
-E. PRODOTTI, VOLUMI E MATERIALI
-Configura fino a 7 tipologie di prodotto. Lascia volume = 0 per disattivare una riga.
-PRODOTTO
-VOL.
-PZ/MESE
-G / ML
-RESINA /PZ
-€ RESINA
-/1100g · /1L · /1kg
-UNITA
-RESINA
-G / ML
-SUPPORT /PZ
-€ SUPPORT
-/1100g · /1L · /1kg
-UNITA
-SUPPORT
-H STAMPA
-/JOB
-PZ
-/JOB
-MIN LAV.
-/PZ
-PREZZO
-VENDITA €
+Per richieste di licenza d'uso, integrazione white-label per rivenditori o distributori, personalizzazione su misura, formazione o partnership:
 
-F. ENERGIA & MANODOPERA
-Consumo elettrico durante stampa
+**Barbara Vetuschi**  
+Consulenza strategica nella stampa 3D dentale  
+Distributrice esclusiva Asiga per l'Italia  
+📧 connect@dentaltechpro.eu  
+📍 Grassobbio (BG) — Lombardia, Italia
 
-kW
-Costo energia elettrica
+---
 
-€/kWh
-Costo orario operatore (lordo azienda)
+## ⚠️ Disclaimer
 
-€/ora
-A soli fini illustrativi. Non sostituisce consulenza fiscale o analisi finanziaria professionale.
-Simulatore Iper-Ammortamento 2026  |  © 2026
+Lo strumento è fornito "così com'è", a soli fini illustrativi. I risultati non sostituiscono la consulenza fiscale, finanziaria o di business professionale. La titolare non risponde di decisioni di investimento, fiscali o commerciali assunte sulla base dei calcoli prodotti, che dipendono da assunzioni e scenari che ogni utente deve validare per la propria realtà aziendale.
+
+---
+
+© 2026 Barbara Vetuschi — Tutti i diritti riservati
